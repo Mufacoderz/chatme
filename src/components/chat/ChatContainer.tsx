@@ -33,10 +33,6 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     () => messages.filter((m) => !m.isBot && m.remindAt && !m.isRemindDone),
     [messages]
   )
-  const pendingCount = useMemo(
-    () => messages.filter((m) => !m.isDone && !m.isBot).length,
-    [messages]
-  )
 
   const matchedMessages = useMemo(
     () =>
@@ -88,7 +84,6 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         icon={room.icon}
         description={room.description}
         messageCount={messages.filter((m) => !m.isBot).length}
-        pendingCount={pendingCount}
         reminders={reminders}
         messages={messages}
         onReminderDone={handleReminderDone}

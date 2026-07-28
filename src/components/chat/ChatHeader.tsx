@@ -17,7 +17,6 @@ type Props = {
   icon: string
   description: string | null
   messageCount: number
-  pendingCount: number
   reminders: Message[]
   messages: Message[]
   onReminderDone: (messageId: string) => void
@@ -33,7 +32,6 @@ export default function ChatHeader({
   icon,
   description,
   messageCount,
-  pendingCount,
   reminders,
   messages,
   onReminderDone,
