@@ -3,8 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { getRoomsForUser } from "@/server/services/rooms"
 import Topbar from "@/components/sidebar/TopBar"
-import SearchBar from "@/components/sidebar/SearchBar"
-import SidebarWrapper from "@/components/sidebar/SidebarWrapper"
+import SidebarSection from "@/components/sidebar/SidebarSection"
 import AddRoomButton from "@/components/sidebar/AddRoomButton"
 import MobileLayout from "@/components/layouts/MobileLayout"
 
@@ -32,8 +31,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const sidebar = (
     <>
       <Topbar userName={session.user.name} />
-      <SearchBar />
-      <SidebarWrapper serverRooms={rooms} />
+      <SidebarSection serverRooms={rooms} />
       <AddRoomButton />
     </>
   )

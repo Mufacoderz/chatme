@@ -18,11 +18,10 @@ type ServerRoom = {
 
 type Props = {
   serverRooms?: ServerRoom[]
+  searchQuery?: string
 }
 
-export default function SidebarWrapper({ serverRooms }: Props) {
-  // useMemo supaya initialRooms tidak dibuat ulang setiap render
-  // (referensi array baru tiap render = useEffect di useRooms jalan terus = loop)
+export default function SidebarWrapper({ serverRooms, searchQuery = "" }: Props) {
   const initialRooms = useMemo(
     () =>
       serverRooms?.map((r) => ({
@@ -35,16 +34,22 @@ export default function SidebarWrapper({ serverRooms }: Props) {
         })),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // cukup sekali saat mount — serverRooms dari server tidak berubah
+    []
   )
 
   const { rooms, loading } = useRooms(initialRooms)
+
+  const filteredRooms = useMemo(() => {
+    if (!searchQuery.trim()) return rooms
+    const q = searchQuery.toLowerCase()
+    return rooms.filter((r) => r.name.toLowerCase().includes(q))
+  }, [rooms, searchQuery])
 
   if (loading && rooms.length === 0) {
     return <SidebarSkeleton />
   }
 
-  return <RoomList rooms={rooms} />
+  return <RoomList rooms={filteredRooms} />
 }
 
 function SidebarSkeleton() {
