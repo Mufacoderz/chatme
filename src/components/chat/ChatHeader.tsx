@@ -86,7 +86,7 @@ export default function ChatHeader({
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-sm font-semibold truncate text-[var(--text)]">{name}</span>
             <span className="text-xs text-[var(--text3)] truncate">
-              {pendingCount} reminder · {messageCount} pesan
+              {reminders.length} reminder · {messageCount} pesan
             </span>
           </div>
         </div>
