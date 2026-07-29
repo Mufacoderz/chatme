@@ -78,12 +78,12 @@ export default function AddRoomButton() {
             />
 
             <label className="text-xs text-[var(--text3)] mb-2 block">Pilih ikon</label>
-            <div className="grid grid-cols-8 gap-2 mb-6">
+            <div className="grid grid-cols-4 gap-3 mb-6">
               {ROOM_ICONS.map((name) => (
                 <button
                   key={name}
                   onClick={() => setIcon(name)}
-                  className="neo-button overflow-hidden w-10 h-10 rounded-lg flex items-center justify-center transition-colors "
+                  className="neo-button overflow-hidden w-14 h-14 rounded-xl flex items-center justify-center transition-colors"
                   style={{
                     background: icon === name ? "var(--accent)" : "var(--surface2)",
                   }}
@@ -91,8 +91,8 @@ export default function AddRoomButton() {
                   <Image
                     src={`/room-icons/${name}`}
                     alt={name}
-                    width={40}
-                    height={40}
+                    width={56}
+                    height={56}
                     className="object-contain"
                   />
                 </button>
