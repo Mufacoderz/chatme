@@ -79,12 +79,12 @@ export default function ChatHeader({
             <FiArrowLeft size={20} />
           </button>
 
-          <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--surface2)] p-1.5">
+          <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--surface2)] overflow-hidden">
             <Image
               src={getRoomIconSrc(icon)}
               alt={icon}
-              width={26}
-              height={26}
+              width={50}
+              height={50}
               className="object-contain"
             />
           </div>

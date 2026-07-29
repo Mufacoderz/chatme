@@ -103,16 +103,13 @@ export default function RoomItem({
       )}
 
       <div
-        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 neo-button p-1.5"
-        style={{
-          background: isActive ? "var(--bg)" : "var(--surface2)",
-        }}
+        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 neo-button !p-0 overflow-hidden"
       >
         <Image
           src={getRoomIconSrc(icon)}
           alt={icon}
-          width={32}
-          height={32}
+          width={46}
+          height={46}
           className="object-contain"
         />
       </div>

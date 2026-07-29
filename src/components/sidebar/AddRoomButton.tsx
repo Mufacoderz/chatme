@@ -83,7 +83,7 @@ export default function AddRoomButton() {
                 <button
                   key={name}
                   onClick={() => setIcon(name)}
-                  className="neo-button w-10 h-10 rounded-lg flex items-center justify-center transition-colors p-1"
+                  className="neo-button overflow-hidden w-10 h-10 rounded-lg flex items-center justify-center transition-colors "
                   style={{
                     background: icon === name ? "var(--accent)" : "var(--surface2)",
                   }}
@@ -91,8 +91,8 @@ export default function AddRoomButton() {
                   <Image
                     src={`/room-icons/${name}`}
                     alt={name}
-                    width={28}
-                    height={28}
+                    width={40}
+                    height={40}
                     className="object-contain"
                   />
                 </button>

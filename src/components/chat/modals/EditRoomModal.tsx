@@ -74,14 +74,14 @@ export default function EditRoomModal({
             <button
               key={name}
               onClick={() => setIcon(name)}
-              className="w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-colors bg-[var(--surface2)] p-1"
+              className="w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-colors bg-[var(--surface2)] overflow-hidden"
               style={{ borderColor: icon === name ? "var(--accent)" : "transparent" }}
             >
               <Image
                 src={`/room-icons/${name}`}
                 alt={name}
-                width={28}
-                height={28}
+                width={60}
+                height={60}
                 className="object-contain"
               />
             </button>
