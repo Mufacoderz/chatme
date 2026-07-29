@@ -1,23 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { FiPlus, FiX } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 import { useCreateRoom } from "@/hooks/useRooms"
-
-const EMOJIS = ['💬','📚','🏪','💸','💭','🎯','📝','🛒','💡','🏋️','🎮','🎵','✈️','🍜','💊','📦','🔧','🌙','⚡','🎨']
+import { ROOM_ICONS, DEFAULT_ROOM_ICON } from "@/lib/roomIcons"
 
 export default function AddRoomButton() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
-  const [icon, setIcon] = useState("💬")
+  const [icon, setIcon] = useState(DEFAULT_ROOM_ICON)
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
 
   function handleClose() {
     setOpen(false)
     setName("")
-    setIcon("💬")
+    setIcon(DEFAULT_ROOM_ICON)
     setDescription("")
   }
 
@@ -78,18 +78,23 @@ export default function AddRoomButton() {
             />
 
             <label className="text-xs text-[var(--text3)] mb-2 block">Pilih ikon</label>
-            <div className="grid grid-cols-7 gap-2 mb-6">
-              {EMOJIS.map((e) => (
+            <div className="grid grid-cols-8 gap-2 mb-6">
+              {ROOM_ICONS.map((name) => (
                 <button
-                  key={e}
-                  onClick={() => setIcon(e)}
-                  className="neo-button w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors"
+                  key={name}
+                  onClick={() => setIcon(name)}
+                  className="neo-button w-10 h-10 rounded-lg flex items-center justify-center transition-colors p-1"
                   style={{
-                    background: icon === e ? "var(--accent)" : "var(--surface2)",
-                    color: icon === e ? "var(--accent-ink)" : "var(--text)",
+                    background: icon === name ? "var(--accent)" : "var(--surface2)",
                   }}
                 >
-                  {e}
+                  <Image
+                    src={`/room-icons/${name}`}
+                    alt={name}
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                  />
                 </button>
               ))}
             </div>

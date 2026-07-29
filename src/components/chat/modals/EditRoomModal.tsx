@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { FiX } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 import { useUpdateRoom } from "@/hooks/useRooms"
-
-const EMOJIS = ['💬','📚','🏪','💸','💭','🎯','📝','🛒','💡','🏋️','🎮','🎵','✈️','🍜','💊','📦','🔧','🌙','⚡','🎨']
+import { ROOM_ICONS } from "@/lib/roomIcons"
 
 type Props = {
   roomId: string
@@ -69,15 +69,21 @@ export default function EditRoomModal({
         />
 
         <label className="text-xs text-[var(--text3)] mb-2 block">Pilih ikon</label>
-        <div className="grid grid-cols-7 gap-2 mb-6">
-          {EMOJIS.map((e) => (
+        <div className="grid grid-cols-8 gap-2 mb-6">
+          {ROOM_ICONS.map((name) => (
             <button
-              key={e}
-              onClick={() => setIcon(e)}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-xl border-2 transition-colors bg-[var(--surface2)]"
-              style={{ borderColor: icon === e ? "var(--accent)" : "transparent" }}
+              key={name}
+              onClick={() => setIcon(name)}
+              className="w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-colors bg-[var(--surface2)] p-1"
+              style={{ borderColor: icon === name ? "var(--accent)" : "transparent" }}
             >
-              {e}
+              <Image
+                src={`/room-icons/${name}`}
+                alt={name}
+                width={28}
+                height={28}
+                className="object-contain"
+              />
             </button>
           ))}
         </div>
