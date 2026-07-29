@@ -30,7 +30,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   const sidebar = (
     <>
-      <Topbar userName={session.user.name} />
+      <Topbar userName={session.user.name} userImage={session.user.image} userEmail={session.user.email} />
       <SidebarSection serverRooms={rooms} />
       <AddRoomButton />
     </>

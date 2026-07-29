@@ -1,15 +1,18 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { FiLogOut, FiUser } from "react-icons/fi"
 
 type Props = {
   userName: string | null | undefined
+  userImage: string | null | undefined
+  userEmail: string | null | undefined
 }
 
-export default function Topbar({ userName }: Props) {
+export default function Topbar({ userName, userImage, userEmail }: Props) {
   const initial = userName?.charAt(0).toUpperCase() ?? "?"
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -41,18 +44,45 @@ export default function Topbar({ userName }: Props) {
           onClick={() => setOpen(value => !value)}
           aria-label="Buka menu profil"
           aria-expanded={open}
-          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs font-sora bg-[var(--paper)] text-[var(--text)] neo-button"
+          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs font-sora bg-[var(--paper)] text-[var(--text)] neo-button overflow-hidden"
         >
-          {initial}
+          {userImage ? (
+            <Image
+              src={userImage}
+              alt={userName ?? ""}
+              width={32}
+              height={32}
+              unoptimized
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            initial
+          )}
         </button>
 
         {open && (
           <div className="neo-panel absolute right-0 top-12 z-50 w-48 overflow-hidden rounded-xl bg-[var(--surface)]">
-            <div className="border-b-2 border-[var(--neo-line)] px-4 py-3">
-              <p className="truncate text-sm font-bold font-sora text-[var(--text)]">
-                {userName || "Pengguna Chatme"}
-              </p>
-              <p className="mt-0.5 text-[11px] text-[var(--text3)]">Akun pribadi</p>
+            <div className="flex items-center gap-3 border-b-2 border-[var(--neo-line)] px-4 py-3">
+              {userImage ? (
+                <Image
+                  src={userImage}
+                  alt={userName ?? ""}
+                  width={36}
+                  height={36}
+                  unoptimized
+                  className="h-9 w-9 rounded-lg object-cover"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-bold text-[var(--accent-ink)]">
+                  {initial}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold font-sora text-[var(--text)]">
+                  {userName || "Pengguna Chatme"}
+                </p>
+                <p className="mt-0.5 truncate text-[11px] text-[var(--text3)]">{userEmail || "Akun pribadi"}</p>
+              </div>
             </div>
 
             <Link
