@@ -2,6 +2,7 @@ import { z } from "zod"
 import { router, protectedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 import { getRoomsForUser } from "@/server/services/rooms"
+import { DEFAULT_ROOM_ICON, ROOM_ICON_REGEX } from "@/lib/roomIcons"
 
 export const roomRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -11,14 +12,14 @@ export const roomRouter = router({
   create: protectedProcedure
     .input(z.object({
       name: z.string().min(1),
-      icon: z.string().optional(),
+      icon: z.string().regex(ROOM_ICON_REGEX).optional(),
       description: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.room.create({
         data: {
           name: input.name,
-          icon: input.icon || "💬",
+          icon: input.icon || DEFAULT_ROOM_ICON,
           description: input.description || null,
           userId: ctx.userId,
         },
@@ -29,7 +30,7 @@ export const roomRouter = router({
     .input(z.object({
       id: z.string(),
       name: z.string().optional(),
-      icon: z.string().optional(),
+      icon: z.string().regex(ROOM_ICON_REGEX).optional(),
       description: z.string().nullable().optional(),
     }))
     .mutation(async ({ ctx, input }) => {

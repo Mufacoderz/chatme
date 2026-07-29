@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { FiArrowLeft, FiMoreVertical, FiX, FiCheck } from "react-icons/fi"
 import { IoSearch, IoNotificationsOutline } from "react-icons/io5"
@@ -10,6 +11,7 @@ import EditRoomModal from "./modals/EditRoomModal"
 import DeleteRoomModal from "./modals/DeleteRoomModal"
 import PinnedMessagesModal from "./modals/PinnedMessagesModal"
 import { ModalPortal } from "@/components/ui/ModalPortal"
+import { getRoomIconSrc } from "@/lib/roomIcons"
 
 type Props = {
   roomId: string
@@ -77,8 +79,14 @@ export default function ChatHeader({
             <FiArrowLeft size={20} />
           </button>
 
-          <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-[var(--surface2)]">
-            {icon}
+          <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--surface2)] p-1.5">
+            <Image
+              src={getRoomIconSrc(icon)}
+              alt={icon}
+              width={26}
+              height={26}
+              className="object-contain"
+            />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col">
