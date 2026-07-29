@@ -1,9 +1,11 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef } from "react"
 import { trpc } from "@/lib/trpc"
+import { getRoomIconSrc } from "@/lib/roomIcons"
 
 type Props = {
   id: string
@@ -101,12 +103,18 @@ export default function RoomItem({
       )}
 
       <div
-        className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 neo-button"
+        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 neo-button p-1.5"
         style={{
           background: isActive ? "var(--bg)" : "var(--surface2)",
         }}
       >
-        {icon}
+        <Image
+          src={getRoomIconSrc(icon)}
+          alt={icon}
+          width={32}
+          height={32}
+          className="object-contain"
+        />
       </div>
 
       <div className="flex-1 min-w-0">
