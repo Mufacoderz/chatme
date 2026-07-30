@@ -40,8 +40,8 @@ export default function EditRoomModal({
         style={{ background: "#00000070", backdropFilter: "blur(4px)" }}
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
-      <div className="w-full max-w-md rounded-t-3xl p-6 pb-10 bg-[var(--surface)] border-t border-[var(--border2)]">
-        <div className="w-9 h-1 rounded-full mx-auto mb-5 bg-[var(--border2)]" />
+      <div className="neo-panel w-[calc(100%-24px)] max-w-md rounded-2xl bg-[var(--surface)] p-6 pb-8">
+        <div className="w-12 h-2 rotate-1 rounded-md mx-auto mb-5 bg-[var(--accent)] border-2 border-[var(--neo-line)]" />
 
         <div className="flex items-center justify-between mb-5">
           <p className="font-semibold font-sora text-base text-[var(--text)]">Edit Room</p>
@@ -52,7 +52,7 @@ export default function EditRoomModal({
 
         <label className="text-xs text-[var(--text3)] mb-1.5 block">Nama room *</label>
         <input
-          className="w-full rounded-xl px-4 py-3 text-sm outline-none mb-4 border bg-[var(--surface2)] border-[var(--border2)] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--accent)] transition-colors"
+          className="neo-input w-full rounded-xl px-4 py-3 text-sm outline-none mb-4 bg-[var(--surface2)] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--accent)] transition-colors"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSave()}
@@ -62,7 +62,7 @@ export default function EditRoomModal({
           Deskripsi <span className="text-[var(--text3)]">(opsional)</span>
         </label>
         <input
-          className="w-full rounded-xl px-4 py-3 text-sm outline-none mb-5 border bg-[var(--surface2)] border-[var(--border2)] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--accent)] transition-colors"
+          className="neo-input w-full rounded-xl px-4 py-3 text-sm outline-none mb-5 bg-[var(--surface2)] text-[var(--text)] placeholder:text-[var(--text3)] focus:border-[var(--accent)] transition-colors"
           placeholder="Untuk apa room ini..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -74,7 +74,7 @@ export default function EditRoomModal({
             <button
               key={name}
               onClick={() => setIcon(name)}
-              className="w-14 h-14 rounded-xl flex items-center justify-center transition-colors overflow-hidden"
+              className="neo-button overflow-hidden w-14 h-14 rounded-xl flex items-center justify-center transition-colors"
               style={{
                 background: icon === name ? "var(--accent)" : "var(--surface2)",
               }}
@@ -93,7 +93,7 @@ export default function EditRoomModal({
         <button
           onClick={handleSave}
           disabled={!name.trim() || loading}
-          className="w-full py-3 rounded-xl font-semibold text-sm font-sora transition-opacity bg-[var(--accent)] text-[var(--accent-ink)]"
+          className="neo-button w-full py-3 rounded-xl font-semibold text-sm font-sora transition-opacity bg-[var(--accent)] text-[var(--accent-ink)]"
           style={{ opacity: !name.trim() || loading ? 0.5 : 1 }}
         >
           {loading ? "Menyimpan..." : "Simpan"}

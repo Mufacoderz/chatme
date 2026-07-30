@@ -28,7 +28,7 @@ model User {
 model Room {
   id          String   @id @default(cuid())
   name        String
-  icon        String   @default("1.png")
+  icon        String   @default("1.webp")
   description String?
   userId      String
   createdAt   DateTime @default(now())
