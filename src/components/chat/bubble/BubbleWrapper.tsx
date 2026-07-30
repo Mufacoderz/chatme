@@ -7,7 +7,6 @@ import DeleteMessageModal from "@/components/chat/modals/DeleteMessageModal"
 import EditMessageModal from "@/components/chat/modals/EditMessageModal"
 import MessageBubble from "./MessageBubble"
 import ChecklistBubble from "./ChecklistBubble"
-import { FiSlash } from "react-icons/fi"
 import { MessageType } from "@prisma/client"
 import { useMessageActions } from "@/hooks/useMessageActions"
 import type { ChatMessage } from "@/types/chat"
@@ -17,7 +16,7 @@ type Props = {
   roomId: string
   isNew?: boolean
   searchQuery?: string
-  onSoftDelete?: (messageId: string) => void
+  onDeleteMessage?: (message: ChatMessage) => void
 }
 
 const BubbleWrapper = memo(function BubbleWrapper({
@@ -25,7 +24,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   roomId,
   isNew = false,
   searchQuery = "",
-  onSoftDelete,
+  onDeleteMessage,
 }: Props) {
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
   const [showRemind, setShowRemind] = useState(false)
@@ -33,7 +32,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   const [showEdit, setShowEdit] = useState(false)
   const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle, softDelete, hardDelete } = useMessageActions()
+  const { editMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle } = useMessageActions()
 
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
@@ -71,20 +70,13 @@ const BubbleWrapper = memo(function BubbleWrapper({
     toggleDone.mutate({ id: message.id, isDone: !message.isDone })
   }, [message, toggleDone, checklistToggle])
 
-  const isDeleted = Boolean(message.deletedAt)
-
   const handleTogglePin = useCallback(() => {
     togglePin.mutate({ id: message.id, isPinned: !message.isPinned })
   }, [message.id, message.isPinned, togglePin])
 
   const handleDelete = useCallback(async () => {
-    if (isDeleted) {
-      hardDelete(message.id)
-    } else {
-      softDelete(message.id)
-      onSoftDelete?.(message.id)
-    }
-  }, [message.id, isDeleted, softDelete, hardDelete, onSoftDelete])
+    onDeleteMessage?.(message)
+  }, [message, onDeleteMessage])
 
   const handleEdit = useCallback(async (text: string) => {
     await editMessage.mutateAsync({ id: message.id, text })
@@ -101,21 +93,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   return (
     <>
       <div className="select-none">
-        {isDeleted ? (
-          <div
-            className="neo-card mx-3 my-2 rounded-xl px-4 py-3 opacity-60"
-            style={{ background: "var(--surface2)", borderColor: "var(--border2)" }}
-            onContextMenu={handleContextMenu}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            onTouchMove={handleTouchEnd}
-          >
-            <div className="flex items-center gap-2">
-              <FiSlash size={16} className="text-[var(--text3)] flex-shrink-0" />
-              <p className="text-xs italic text-[var(--text3)]">Pesan telah dihapus</p>
-            </div>
-          </div>
-        ) : message.type === MessageType.CHECKLIST ? (
+        {message.type === MessageType.CHECKLIST ? (
           <ChecklistBubble
             message={message}
             roomId={roomId}

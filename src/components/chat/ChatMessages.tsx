@@ -5,8 +5,6 @@ import { FiArrowDown } from "react-icons/fi"
 import BubbleWrapper from "./bubble/BubbleWrapper"
 import BotBubble from "./bubble/BotBubble"
 import type { ChatMessage } from "@/types/chat"
-import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2"
-
 
 type Props = {
   messages: ChatMessage[]
@@ -16,7 +14,7 @@ type Props = {
   onLoadMore?: () => void
   onBotDone: (botMessageId: string, sourceMessageId: string) => void
   onBotSnooze: (botMessageId: string, sourceMessageId: string) => void
-  onSoftDelete?: (messageId: string) => void
+  onDeleteMessage?: (message: ChatMessage) => void
   roomId: string
   searchQuery?: string
   activeMatchId?: string | null
@@ -95,7 +93,7 @@ export default function ChatMessages({
   onLoadMore,
   onBotDone,
   onBotSnooze,
-  onSoftDelete,
+  onDeleteMessage,
   roomId,
   searchQuery = "",
   activeMatchId = null,
@@ -227,12 +225,6 @@ export default function ChatMessages({
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div
-                className="w-16 h-16 rounded-2xl border flex items-center justify-center"
-                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-              >
-                <HiOutlineChatBubbleLeftRight size={28} style={{ color: "var(--text3)" }} />
-              </div>
         <p className="text-sm text-[var(--text3)]">
           Belum ada catatan. Mulai dari mana saja.
         </p>
@@ -305,7 +297,7 @@ export default function ChatMessages({
                       roomId={roomId}
                       isNew={isTemp}
                       searchQuery={searchQuery}
-                      onSoftDelete={onSoftDelete}
+                      onDeleteMessage={onDeleteMessage}
                     />
                   </div>
                 )

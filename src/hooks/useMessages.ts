@@ -111,14 +111,13 @@ function updateSidebarPreview(
   queryClient: ReturnType<typeof useQueryClient>,
   roomsKey: ReturnType<typeof getQueryKey>,
   roomId: string,
-  text: string,
-  createdAt: Date
+  preview: { text: string; createdAt: Date } | null
 ) {
   queryClient.setQueryData(roomsKey, (old: RoomData[] | undefined) => {
     if (!old) return old
     const updated = old.map((r) =>
       r.id === roomId
-        ? { ...r, messages: [{ text, createdAt }] }
+        ? { ...r, messages: preview ? [preview] : [] }
         : r
     )
     updated.sort((a, b) => {
@@ -136,6 +135,29 @@ function getMessagesFromCache(
 ): ChatMessage[] {
   const data = queryClient.getQueryData<MessagesPageData>(messagesKey)
   return data?.pages.flatMap((p) => p.messages) ?? []
+}
+
+// Hitung ulang pesan terakhir yg masih ada di cache messages saat ini,
+// lalu sinkronkan ke preview sidebar room list — dipanggil tiap kali ada
+// delete/undo delete, biar sidebar ikut berubah realtime tanpa refresh.
+function syncSidebarPreview(
+  queryClient: ReturnType<typeof useQueryClient>,
+  messagesKey: ReturnType<typeof getQueryKey>,
+  roomsKey: ReturnType<typeof getQueryKey>,
+  roomId: string
+) {
+  const messages = getMessagesFromCache(queryClient, messagesKey)
+  const visible = messages.filter((m) => !m.isBot)
+  const latest = visible.reduce<ChatMessage | null>(
+    (a, b) => (!a || new Date(b.createdAt) > new Date(a.createdAt) ? b : a),
+    null
+  )
+  updateSidebarPreview(
+    queryClient,
+    roomsKey,
+    roomId,
+    latest ? { text: latest.text, createdAt: new Date(latest.createdAt) } : null
+  )
 }
 
 // ── Send message ────────────────────────────────────────────────────────
@@ -184,7 +206,10 @@ export function useSendMessage(roomId: string) {
       updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
         msgs.map((m) => (m.id === context?.tempId ? realMessage : m))
       )
-      updateSidebarPreview(queryClient, roomsKey, roomId, realMessage.text, new Date(realMessage.createdAt))
+      updateSidebarPreview(queryClient, roomsKey, roomId, {
+        text: realMessage.text,
+        createdAt: new Date(realMessage.createdAt),
+      })
       broadcastInvalidate(roomsKey)
     },
     onError: (_err, _input, context) => {
@@ -216,14 +241,25 @@ export function useEditMessage(roomId: string) {
       , allMsgs[0])
 
       if (latest?.id === updated.id) {
-        updateSidebarPreview(queryClient, roomsKey, roomId, updated.text, new Date(updated.createdAt))
+        updateSidebarPreview(queryClient, roomsKey, roomId, {
+          text: updated.text,
+          createdAt: new Date(updated.createdAt),
+        })
         broadcastInvalidate(roomsKey)
       }
     },
   })
 }
 
-// ── Delete message (soft + hard delete with undo) ──────────────────────
+// ── Delete message ───────────────────────────────────────────────────────
+//
+// Klik hapus -> pesan LANGSUNG hilang dari chat + preview sidebar
+// (optimistic, gak ada bubble "Pesan telah dihapus"). Penghapusan
+// permanen di server baru beneran dieksekusi kalau commitDelete()
+// dipanggil (dari timer undo-toast di ChatContainer). Kalau user pencet
+// "Urungkan" sebelum itu, restoreToView() cukup masukin lagi objek pesan
+// yg sama ke cache — gak ada request ke server sama sekali karena
+// belum pernah beneran kehapus.
 
 export function useDeleteMessage(roomId: string) {
   const queryClient = useQueryClient()
@@ -231,47 +267,32 @@ export function useDeleteMessage(roomId: string) {
   const roomsKey = getRoomsKey()
 
   const mutation = trpc.message.delete.useMutation({
-    onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: messagesKey })
-      const previous = queryClient.getQueryData(messagesKey)
-      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-        msgs.filter((m) => m.id !== variables.id)
-      )
-      return { previous }
-    },
-    onSuccess: (_data, variables) => {
-      const allMsgs = getMessagesFromCache(queryClient, messagesKey)
-      const latest = allMsgs.reduce((a, b) =>
-        new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-      , allMsgs[0])
-      if (!latest) {
-        queryClient.invalidateQueries({ queryKey: roomsKey })
-      }
+    onSuccess: () => {
       broadcastInvalidate(messagesKey)
       broadcastInvalidate(roomsKey)
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previous) queryClient.setQueryData(messagesKey, context.previous)
-    },
   })
 
-  const softDelete = useCallback((messageId: string) => {
+  const removeFromView = useCallback((messageId: string): ChatMessage | null => {
+    const current = getMessagesFromCache(queryClient, messagesKey)
+    const removed = current.find((m) => m.id === messageId) ?? null
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-      msgs.map((m) => m.id === messageId ? { ...m, deletedAt: new Date() } : m)
+      msgs.filter((m) => m.id !== messageId)
     )
-  }, [queryClient, messagesKey])
+    syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
+    return removed
+  }, [queryClient, messagesKey, roomsKey, roomId])
 
-  const undoDelete = useCallback((messageId: string) => {
-    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-      msgs.map((m) => m.id === messageId ? { ...m, deletedAt: undefined } : m)
-    )
-  }, [queryClient, messagesKey])
+  const restoreToView = useCallback((message: ChatMessage) => {
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => [...msgs, message])
+    syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
+  }, [queryClient, messagesKey, roomsKey, roomId])
 
-  const hardDelete = useCallback((messageId: string) => {
+  const commitDelete = useCallback((messageId: string) => {
     mutation.mutate({ id: messageId })
   }, [mutation])
 
-  return { ...mutation, softDelete, undoDelete, hardDelete }
+  return { removeFromView, restoreToView, commitDelete }
 }
 
 // ── Clear all messages in room ──────────────────────────────────────────

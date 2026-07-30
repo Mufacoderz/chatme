@@ -23,7 +23,7 @@ type Props = {
 
 function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onLoadMore }: Props) {
   const roomId = room.id
-  const { toggleDone, markReminded, setReminder, undoDelete, hardDelete } = useMessageActions()
+  const { toggleDone, markReminded, setReminder, removeFromView, restoreToView, commitDelete } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
   const clearMessages = useClearMessages(roomId)
 
@@ -32,17 +32,18 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const [searchQuery, setSearchQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
   const [undoMessageId, setUndoMessageId] = useState<string | null>(null)
+  const pendingDeleteRef = useRef<ChatMessage | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const reminders = useMemo(
-    () => messages.filter((m) => !m.isBot && !m.deletedAt && m.remindAt && !m.isRemindDone),
+    () => messages.filter((m) => !m.isBot && m.remindAt && !m.isRemindDone),
     [messages]
   )
 
   const matchedMessages = useMemo(
     () =>
       searchQuery.trim()
-        ? messages.filter((m) => !m.isBot && !m.deletedAt && m.text.toLowerCase().includes(searchQuery.toLowerCase()))
+        ? messages.filter((m) => !m.isBot && m.text.toLowerCase().includes(searchQuery.toLowerCase()))
         : [],
     [messages, searchQuery]
   )
@@ -51,14 +52,6 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     setSearchQuery(query)
     setActiveIndex(0)
   }
-
-  useEffect(() => {
-    return () => {
-      if (undoTimerRef.current) {
-        clearTimeout(undoTimerRef.current)
-      }
-    }
-  }, [])
 
   const checkReminders = useCheckReminders()
 
@@ -93,28 +86,49 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     clearMessages.mutate({ roomId })
   }
 
-  function handleSoftDelete(messageId: string) {
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current)
-      if (undoMessageId) hardDelete(undoMessageId)
+  // Klik hapus -> pesan langsung hilang dari chat (optimistic). Kalau
+  // masih ada delete lain yg lagi nunggu di undo-window, itu difinalisasi
+  // duluan (dihapus permanen) sebelum yg baru mulai — cuma ada 1 slot
+  // undo aktif dalam satu waktu.
+  function handleDeleteMessage(message: ChatMessage) {
+    if (pendingDeleteRef.current) {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      commitDelete(pendingDeleteRef.current.id)
     }
-    setUndoMessageId(messageId)
+
+    removeFromView(message.id)
+    pendingDeleteRef.current = message
+    setUndoMessageId(message.id)
+
     undoTimerRef.current = setTimeout(() => {
-      hardDelete(messageId)
+      commitDelete(message.id)
+      pendingDeleteRef.current = null
       setUndoMessageId(null)
       undoTimerRef.current = null
     }, 5000)
   }
 
   function handleUndo() {
-    if (!undoMessageId) return
+    if (!pendingDeleteRef.current) return
     if (undoTimerRef.current) {
       clearTimeout(undoTimerRef.current)
       undoTimerRef.current = null
     }
-    undoDelete(undoMessageId)
+    restoreToView(pendingDeleteRef.current)
+    pendingDeleteRef.current = null
     setUndoMessageId(null)
   }
+
+  // Kalau user pindah room/nutup chat pas masih ada delete yg nunggu di
+  // undo-window, langsung finalisasi (hapus permanen) — jangan biarin
+  // ke-cancel gitu aja, soalnya pesannya udah kelanjur ilang dari cache.
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      if (pendingDeleteRef.current) commitDelete(pendingDeleteRef.current.id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -123,7 +137,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         name={room.name}
         icon={room.icon}
         description={room.description}
-        messageCount={messages.filter((m) => !m.isBot && !m.deletedAt && m.type !== MessageType.CHECKLIST).length}
+        messageCount={messages.filter((m) => !m.isBot && m.type !== MessageType.CHECKLIST).length}
         reminders={reminders}
         messages={messages}
         onReminderDone={handleReminderDone}
@@ -181,7 +195,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         onLoadMore={onLoadMore}
         onBotDone={handleBotDone}
         onBotSnooze={handleBotSnooze}
-        onSoftDelete={handleSoftDelete}
+        onDeleteMessage={handleDeleteMessage}
         roomId={roomId}
         searchQuery={searchQuery}
         activeMatchId={matchedMessages[activeIndex]?.id ?? null}
