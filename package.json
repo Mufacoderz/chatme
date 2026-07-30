@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-room-icons.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/generate-room-icons.mjs",
     "build": "prisma generate && next build --webpack",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node scripts/generate-room-icons.mjs",
     "start": "next start",
     "lint": "eslint"
   },
