@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { FiRotateCcw } from "react-icons/fi"
 
 type Props = {
@@ -11,17 +11,25 @@ type Props = {
 }
 
 export default function UndoToast({ message, onUndo, onTimeout, duration = 5000 }: Props) {
+  const [exiting, setExiting] = useState(false)
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      onTimeout()
+      setExiting(true)
+      setTimeout(() => onTimeout(), 250)
     }, duration)
     return () => clearTimeout(timer)
   }, [duration, onTimeout])
 
+  function handleUndo() {
+    setExiting(true)
+    setTimeout(() => onUndo(), 250)
+  }
+
   return (
     <div className="fixed bottom-6 left-3 right-3 z-50 flex justify-center pointer-events-none">
       <div
-        className="neo-panel pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 shadow-lg animate-slide-up"
+        className={`neo-panel pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 shadow-lg ${exiting ? "animate-slide-down" : "animate-slide-up"}`}
         style={{
           background: "var(--surface2)",
           border: "2px solid var(--neo-line)",
@@ -31,7 +39,7 @@ export default function UndoToast({ message, onUndo, onTimeout, duration = 5000 
       >
         <p className="flex-1 text-sm text-[var(--text)] truncate">{message}</p>
         <button
-          onClick={onUndo}
+          onClick={handleUndo}
           className="neo-button flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold flex-shrink-0"
           style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
         >
