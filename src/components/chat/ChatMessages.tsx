@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useMemo, useState, useCallback } from "react"
-import { FiArrowDown } from "react-icons/fi"
+import { FiArrowDown, FiMessageCircle } from "react-icons/fi"
 import BubbleWrapper from "./bubble/BubbleWrapper"
 import BotBubble from "./bubble/BotBubble"
 import type { ChatMessage } from "@/types/chat"
@@ -166,6 +166,12 @@ export default function ChatMessages({
 
     const currentCount = messages.length
     const currentLastId = messages[messages.length - 1]?.id ?? null
+    // Room masih kosong (belum ada pesan sama sekali) — jangan tandai
+    // isFirstRender selesai di sini. Kalau ditandai selesai sekarang,
+    // pesan PERTAMA yang beneran masuk nanti (temp message dari optimistic
+    // send) gak akan lewat branch isFirstRender di bawah, jadi gak pernah
+    // ke-track di pendingTempIds -> reconciliation temp->real id-nya
+    // gagal dan room baru kelihatan nge-lag/nyangkut pas chat pertama kali.
     if (currentCount === 0) return
 
     const prevCount = prevMessageCountRef.current
@@ -179,6 +185,9 @@ export default function ChatMessages({
     if (isFirstRender.current) {
       isFirstRender.current = false
       scrollToBottom(false)
+      if (currentLastId?.startsWith("temp-")) {
+        pendingTempIds.current.add(currentLastId)
+      }
       return
     }
 
@@ -224,7 +233,13 @@ export default function ChatMessages({
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div
+          className="neo-card flex h-16 w-16 rotate-[-2deg] items-center justify-center rounded-2xl"
+          style={{ background: "var(--surface2)" }}
+        >
+          <FiMessageCircle size={30} className="text-[var(--text3)]" />
+        </div>
         <p className="text-sm text-[var(--text3)]">
           Belum ada catatan. Mulai dari mana saja.
         </p>

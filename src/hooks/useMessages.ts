@@ -94,7 +94,15 @@ export function updateMessagesCacheFlatten(
   updater: (messages: ChatMessage[]) => ChatMessage[]
 ) {
   queryClient.setQueryData(messagesKey, (old: MessagesPageData | undefined) => {
-    if (!old) return old
+    if (!old) {
+      // Room baru yg initial message.list-nya BELUM selesai fetch (misal:
+      // user langsung ngirim pesan pertama begitu masuk room). Tanpa ini,
+      // optimistic update di bawah jadi no-op diam2 (gak ada page buat
+      // diisi) -> pesan pertama "ilang" sampe ada refetch lain yg gak
+      // dijamin kejadian. Seed 1 page kosong dulu biar update-nya nempel.
+      const seeded = updater([])
+      return { pageParams: [undefined], pages: [{ messages: seeded, hasMore: false }] }
+    }
     const all = old.pages.flatMap((p) => p.messages)
     const updated = updater(all)
     const pageSize = old.pages[old.pages.length - 1]?.messages.length ?? 50
