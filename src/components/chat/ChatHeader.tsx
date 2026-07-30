@@ -3,14 +3,14 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { FiArrowLeft, FiMoreVertical, FiX, FiCheck } from "react-icons/fi"
+import { FiArrowLeft, FiMoreVertical, FiX } from "react-icons/fi"
 import { IoSearch, IoNotificationsOutline } from "react-icons/io5"
 import { Message } from "@prisma/client"
 import RoomSettingsMenu from "./modals/RoomSettingsMenu"
 import EditRoomModal from "./modals/EditRoomModal"
 import DeleteRoomModal from "./modals/DeleteRoomModal"
 import PinnedMessagesModal from "./modals/PinnedMessagesModal"
-import { ModalPortal } from "@/components/ui/ModalPortal"
+import ReminderListModal from "./modals/ReminderListModal"
 import { getRoomIconSrc } from "@/lib/roomIcons"
 
 type Props = {
@@ -204,61 +204,14 @@ export default function ChatHeader({
 
       {/* Modal Reminder List */}
       {showReminders && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center"
-            style={{ background: "#00000070", backdropFilter: "blur(4px)" }}
-            onClick={(e) => e.target === e.currentTarget && setShowReminders(false)}
-          >
-          <div className="neo-panel w-[calc(100%-24px)] max-w-md rounded-2xl bg-[var(--surface)] p-6 pb-8">
-            <div className="w-12 h-2 -rotate-1 rounded-md mx-auto mb-5 bg-[var(--accent)] border-2 border-[var(--neo-line)]" />
-            <div className="flex items-center justify-between mb-4">
-              <p className="font-semibold font-sora text-sm text-[var(--text)]">Reminder Aktif</p>
-              <button onClick={() => setShowReminders(false)} className="text-[var(--text3)]">
-                <FiX size={18} />
-              </button>
-            </div>
-
-            {reminders.length === 0 ? (
-              <p className="text-sm text-center py-6 text-[var(--text3)]">Tidak ada reminder aktif</p>
-            ) : (
-              <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
-                {reminders.map((r) => (
-                  <div
-                    key={r.id}
-                    className="neo-card flex items-center gap-3 rounded-xl p-3"
-                    style={{ background: "var(--surface2)", borderColor: "var(--border2)" }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate text-[var(--text)]">{r.text}</p>
-                      {r.remindAt && (
-                        <p className="text-[11px] mt-0.5 text-[var(--accent)]">
-                          🔔 {new Date(r.remindAt).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => {
-                        onReminderDone(r.id)
-                        setShowReminders(false)
-                      }}
-                      className="neo-button w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 hover:opacity-80"
-                      style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
-                    >
-                      <FiCheck size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          </div>
-        </ModalPortal>
+        <ReminderListModal
+          reminders={reminders}
+          onDone={(id) => {
+            onReminderDone(id)
+            setShowReminders(false)
+          }}
+          onClose={() => setShowReminders(false)}
+        />
       )}
 
       {/* Modal lainnya */}
