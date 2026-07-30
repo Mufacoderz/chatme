@@ -75,11 +75,11 @@ export default async function ProfilePage() {
           </div>
           <div className="-rotate-1 neo-card rounded-xl bg-[var(--accent)] p-4 text-center">
             <p className="font-sora text-xl font-black text-[var(--accent-ink)]">{noteCount}</p>
-            <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Notes</p>
+            <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Pesan</p>
           </div>
           <div className="rotate-1 neo-card rounded-xl bg-[var(--accent)] p-4 text-center">
             <p className="font-sora text-xl font-black text-[var(--accent-ink)]">{reminderCount}</p>
-            <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Reminders</p>
+            <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Pengingat Aktif</p>
           </div>
         </section>
 
