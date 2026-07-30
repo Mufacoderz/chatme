@@ -5,6 +5,8 @@ import { FiArrowDown } from "react-icons/fi"
 import BubbleWrapper from "./bubble/BubbleWrapper"
 import BotBubble from "./bubble/BotBubble"
 import type { ChatMessage } from "@/types/chat"
+import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2"
+
 
 type Props = {
   messages: ChatMessage[]
@@ -225,6 +227,12 @@ export default function ChatMessages({
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
+        <div
+                className="w-16 h-16 rounded-2xl border flex items-center justify-center"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+              >
+                <HiOutlineChatBubbleLeftRight size={28} style={{ color: "var(--text3)" }} />
+              </div>
         <p className="text-sm text-[var(--text3)]">
           Belum ada catatan. Mulai dari mana saja.
         </p>

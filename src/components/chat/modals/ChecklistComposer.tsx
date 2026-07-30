@@ -59,7 +59,7 @@ export default function ChecklistComposer({ loading, onClose, onSubmit }: Props)
           autoFocus
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="Contoh: Persiapan deploy"
+          placeholder="Contoh: Daftar tugas UAS"
           maxLength={100}
           className="neo-input mb-5 w-full rounded-xl bg-[var(--surface2)] px-4 py-3 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text3)]"
         />

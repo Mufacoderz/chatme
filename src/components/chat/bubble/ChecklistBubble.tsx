@@ -103,8 +103,8 @@ const ChecklistBubble = memo(function ChecklistBubble({
               <FiList size={17} />
             </div>
             <div className="min-w-0">
-              <p className="break-words font-sora text-sm font-black select-none">{message.text}</p>
-              <p className="mt-0.5 text-[11px] font-semibold opacity-65">
+              <p className="break-words font-sora text-sm font-black text-[var(--accent-ink)] select-none">{message.text}</p>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--accent-ink)] opacity-65">
                 {completed} dari {total} selesai
               </p>
             </div>
