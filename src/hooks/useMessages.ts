@@ -53,6 +53,16 @@ export function useMessagesQuery(roomId: string) {
   )
 }
 
+// ── Room info queries ───────────────────────────────────────────────────
+
+export function useRoomPinnedMessages(roomId: string, enabled: boolean) {
+  return trpc.message.listPinned.useQuery({ roomId }, { enabled })
+}
+
+export function useRoomActiveReminders(roomId: string, enabled: boolean) {
+  return trpc.message.listActiveReminders.useQuery({ roomId }, { enabled })
+}
+
 // ── Mutation helpers ────────────────────────────────────────────────────
 
 type MessagesPageData = {

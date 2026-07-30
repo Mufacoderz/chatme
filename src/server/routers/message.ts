@@ -41,6 +41,37 @@ export const messageRouter = router({
       return { messages, hasMore }
     }),
 
+  listPinned: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const room = await ctx.prisma.room.findFirst({
+        where: { id: input.roomId, userId: ctx.userId },
+        select: { id: true },
+      })
+      if (!room) throw new TRPCError({ code: "NOT_FOUND" })
+
+      return ctx.prisma.message.findMany({
+        where: { roomId: input.roomId, isBot: false, isPinned: true },
+        orderBy: { createdAt: "desc" },
+        include: { checklistItems: { orderBy: { position: "asc" } } },
+      })
+    }),
+
+  listActiveReminders: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const room = await ctx.prisma.room.findFirst({
+        where: { id: input.roomId, userId: ctx.userId },
+        select: { id: true },
+      })
+      if (!room) throw new TRPCError({ code: "NOT_FOUND" })
+
+      return ctx.prisma.message.findMany({
+        where: { roomId: input.roomId, isBot: false, remindAt: { not: null }, isRemindDone: false },
+        orderBy: { remindAt: "asc" },
+      })
+    }),
+
   send: protectedProcedure
     .input(z.object({
       roomId: z.string(),

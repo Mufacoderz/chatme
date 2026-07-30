@@ -12,6 +12,23 @@ export type RoomHeaderData = {
   description: string | null
 }
 
+export type RoomInfoData = {
+  id: string
+  name: string
+  icon: string
+  description: string | null
+  createdAt: Date
+  totalPesan: number
+  pesanDipin: number
+  reminderAktif: number
+  checklist: { total: number; selesai: number }
+  aktivitasTerakhir: Date | null
+}
+
+export function useRoomInfo(roomId: string) {
+  return trpc.room.getInfo.useQuery({ id: roomId })
+}
+
 export function useRoom(roomId: string) {
   const queryClient = useQueryClient()
   const roomsKey = getRoomsKey()

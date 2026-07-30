@@ -60,6 +60,47 @@ export const roomRouter = router({
       return room
     }),
 
+  getInfo: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const room = await ctx.prisma.room.findFirst({
+        where: { id: input.id, userId: ctx.userId },
+        select: { id: true, name: true, icon: true, description: true, createdAt: true },
+      })
+      if (!room) throw new TRPCError({ code: "NOT_FOUND" })
+
+      const baseWhere = { roomId: room.id, isBot: false }
+
+      const [totalPesan, pesanDipin, reminderAktif, checklistTotal, checklistSelesai, lastMessage] =
+        await Promise.all([
+          ctx.prisma.message.count({ where: baseWhere }),
+          ctx.prisma.message.count({ where: { ...baseWhere, isPinned: true } }),
+          ctx.prisma.message.count({
+            where: { ...baseWhere, remindAt: { not: null }, isRemindDone: false },
+          }),
+          ctx.prisma.checklistItem.count({ where: { message: baseWhere } }),
+          ctx.prisma.checklistItem.count({ where: { message: baseWhere, isDone: true } }),
+          ctx.prisma.message.findFirst({
+            where: baseWhere,
+            orderBy: { createdAt: "desc" },
+            select: { createdAt: true },
+          }),
+        ])
+
+      return {
+        id: room.id,
+        name: room.name,
+        icon: room.icon,
+        description: room.description,
+        createdAt: room.createdAt,
+        totalPesan,
+        pesanDipin,
+        reminderAktif,
+        checklist: { total: checklistTotal, selesai: checklistSelesai },
+        aktivitasTerakhir: lastMessage?.createdAt ?? null,
+      }
+    }),
+
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
