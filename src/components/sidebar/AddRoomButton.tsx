@@ -78,7 +78,7 @@ export default function AddRoomButton() {
             />
 
             <label className="text-xs text-[var(--text3)] mb-2 block">Pilih ikon</label>
-            <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-4 gap-3 mb-6 max-h-[132px] overflow-y-auto pr-1">
               {ROOM_ICONS.map((name) => (
                 <button
                   key={name}
