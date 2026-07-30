@@ -7,6 +7,7 @@ import DeleteMessageModal from "@/components/chat/modals/DeleteMessageModal"
 import EditMessageModal from "@/components/chat/modals/EditMessageModal"
 import MessageBubble from "./MessageBubble"
 import ChecklistBubble from "./ChecklistBubble"
+import { FiSlash } from "react-icons/fi"
 import { MessageType } from "@prisma/client"
 import { useMessageActions } from "@/hooks/useMessageActions"
 import type { ChatMessage } from "@/types/chat"
@@ -88,10 +89,26 @@ const BubbleWrapper = memo(function BubbleWrapper({
     markReminded.mutate({ id: message.id })
   }, [message.id, markReminded])
 
+  const isDeleted = Boolean(message.deletedAt)
+
   return (
     <>
       <div className="select-none">
-        {message.type === MessageType.CHECKLIST ? (
+        {isDeleted ? (
+          <div
+            className="neo-card mx-3 my-2 rounded-xl px-4 py-3 opacity-60"
+            style={{ background: "var(--surface2)", borderColor: "var(--border2)" }}
+            onContextMenu={handleContextMenu}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchEnd}
+          >
+            <div className="flex items-center gap-2">
+              <FiSlash size={16} className="text-[var(--text3)] flex-shrink-0" />
+              <p className="text-xs italic text-[var(--text3)]">Pesan telah dihapus</p>
+            </div>
+          </div>
+        ) : message.type === MessageType.CHECKLIST ? (
           <ChecklistBubble
             message={message}
             roomId={roomId}

@@ -206,10 +206,9 @@ export const messageRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.prisma.message.deleteMany({
+      await ctx.prisma.message.deleteMany({
         where: { id: input.id, userId: ctx.userId },
       })
-      if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
       return { success: true }
     }),

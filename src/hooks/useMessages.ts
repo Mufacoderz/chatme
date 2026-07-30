@@ -223,7 +223,7 @@ export function useEditMessage(roomId: string) {
   })
 }
 
-// ── Delete message ──────────────────────────────────────────────────────
+// ── Delete message (soft-delete then hard-delete) ───────────────────────
 
 export function useDeleteMessage(roomId: string) {
   const queryClient = useQueryClient()
@@ -234,22 +234,33 @@ export function useDeleteMessage(roomId: string) {
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
-      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-        msgs.filter((m) => m.id !== variables.id)
-      )
-      return { previous }
-    },
-    onSuccess: (_data, variables) => {
-      const allMsgs = getMessagesFromCache(queryClient, messagesKey)
-      const latest = allMsgs.reduce((a, b) =>
-        new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-      , allMsgs[0])
 
-      if (!latest || !allMsgs.some((m) => m.id === variables.id)) {
-        queryClient.invalidateQueries({ queryKey: roomsKey })
+      let isHardDelete = false
+      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => {
+        const target = msgs.find((m) => m.id === variables.id)
+        if (target?.deletedAt) {
+          isHardDelete = true
+          return msgs.filter((m) => m.id !== variables.id)
+        }
+        return msgs.map((m) =>
+          m.id === variables.id ? { ...m, deletedAt: new Date() } : m
+        )
+      })
+
+      return { previous, isHardDelete }
+    },
+    onSuccess: (_data, _variables, context) => {
+      if (context?.isHardDelete) {
+        const allMsgs = getMessagesFromCache(queryClient, messagesKey)
+        const latest = allMsgs.reduce((a, b) =>
+          new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+        , allMsgs[0])
+        if (!latest) {
+          queryClient.invalidateQueries({ queryKey: roomsKey })
+        }
+        broadcastInvalidate(roomsKey)
       }
       broadcastInvalidate(messagesKey)
-      broadcastInvalidate(roomsKey)
     },
     onError: (_err, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(messagesKey, context.previous)

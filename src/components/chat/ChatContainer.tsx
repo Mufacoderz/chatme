@@ -8,6 +8,7 @@ import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
 import { useMarkRemindedAndDone, useCheckReminders } from "@/hooks/useMessages"
+import { MessageType } from "@prisma/client"
 import type { ChatMessage } from "@/types/chat"
 
 type Props = {
@@ -30,14 +31,14 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const [activeIndex, setActiveIndex] = useState(0)
 
   const reminders = useMemo(
-    () => messages.filter((m) => !m.isBot && m.remindAt && !m.isRemindDone),
+    () => messages.filter((m) => !m.isBot && !m.deletedAt && m.remindAt && !m.isRemindDone),
     [messages]
   )
 
   const matchedMessages = useMemo(
     () =>
       searchQuery.trim()
-        ? messages.filter((m) => !m.isBot && m.text.toLowerCase().includes(searchQuery.toLowerCase()))
+        ? messages.filter((m) => !m.isBot && !m.deletedAt && m.text.toLowerCase().includes(searchQuery.toLowerCase()))
         : [],
     [messages, searchQuery]
   )
@@ -83,7 +84,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         name={room.name}
         icon={room.icon}
         description={room.description}
-        messageCount={messages.filter((m) => !m.isBot).length}
+        messageCount={messages.filter((m) => !m.isBot && !m.deletedAt && m.type !== MessageType.CHECKLIST).length}
         reminders={reminders}
         messages={messages}
         onReminderDone={handleReminderDone}
