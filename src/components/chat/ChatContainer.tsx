@@ -7,7 +7,7 @@ import ChatHeader from "./ChatHeader"
 import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
-import { useMarkRemindedAndDone, useCheckReminders } from "@/hooks/useMessages"
+import { useMarkRemindedAndDone, useCheckReminders, useClearMessages } from "@/hooks/useMessages"
 import { MessageType } from "@prisma/client"
 import type { ChatMessage } from "@/types/chat"
 
@@ -24,6 +24,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const roomId = room.id
   const { toggleDone, markReminded, setReminder } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
+  const clearMessages = useClearMessages(roomId)
 
   const [snoozeBotId, setSnoozeBotId] = useState<string | null>(null)
   const [snoozeSourceId, setSnoozeSourceId] = useState<string | null>(null)
@@ -77,6 +78,10 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     markRemindedAndDone.mutate({ id: messageId })
   }
 
+  function handleClear() {
+    clearMessages.mutate({ roomId })
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <ChatHeader
@@ -88,6 +93,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         reminders={reminders}
         messages={messages}
         onReminderDone={handleReminderDone}
+        onClear={handleClear}
         searchQuery={searchQuery}
         onSearch={handleSearch}
       />

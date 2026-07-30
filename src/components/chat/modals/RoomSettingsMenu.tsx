@@ -1,6 +1,6 @@
 "use client"
 
-import { FiInfo, FiEdit2, FiBookmark, FiTrash2 } from "react-icons/fi"
+import { FiInfo, FiEdit2, FiBookmark, FiTrash2, FiXCircle } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
@@ -9,15 +9,17 @@ type Props = {
   onInfo: () => void
   onEdit: () => void
   onPinned: () => void
+  onClear: () => void
   onDelete: () => void
   onClose: () => void
 }
 
-export default function RoomSettingsMenu({ x, y, onInfo, onEdit, onPinned, onDelete, onClose }: Props) {
+export default function RoomSettingsMenu({ x, y, onInfo, onEdit, onPinned, onClear, onDelete, onClose }: Props) {
   const items = [
     { icon: <FiInfo size={15} />, label: "Info Room", onClick: onInfo, danger: false },
     { icon: <FiEdit2 size={15} />, label: "Edit Room", onClick: onEdit, danger: false },
     { icon: <FiBookmark size={15} />, label: "Pesan Dipin", onClick: onPinned, danger: false },
+    { icon: <FiXCircle size={15} />, label: "Bersihkan Pesan", onClick: onClear, danger: false },
     { icon: <FiTrash2 size={15} />, label: "Hapus Room", onClick: onDelete, danger: true },
   ]
 

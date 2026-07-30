@@ -268,6 +268,21 @@ export function useDeleteMessage(roomId: string) {
   })
 }
 
+// ── Clear all messages in room ──────────────────────────────────────────
+
+export function useClearMessages(roomId: string) {
+  const queryClient = useQueryClient()
+  const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
+
+  return trpc.message.clearAll.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messagesKey })
+      queryClient.invalidateQueries({ queryKey: roomsKey })
+    },
+  })
+}
+
 // ── Toggle done ─────────────────────────────────────────────────────────
 
 export function useToggleDone(roomId: string) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { FiArrowLeft, FiMoreVertical, FiX } from "react-icons/fi"
@@ -11,6 +11,7 @@ import EditRoomModal from "./modals/EditRoomModal"
 import DeleteRoomModal from "./modals/DeleteRoomModal"
 import PinnedMessagesModal from "./modals/PinnedMessagesModal"
 import ReminderListModal from "./modals/ReminderListModal"
+import ClearMessagesModal from "./modals/ClearMessagesModal"
 import { getRoomIconSrc } from "@/lib/roomIcons"
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
   reminders: Message[]
   messages: Message[]
   onReminderDone: (messageId: string) => void
+  onClear: () => void
 
   // Props untuk search (baru)
   searchQuery: string
@@ -37,6 +39,7 @@ export default function ChatHeader({
   reminders,
   messages,
   onReminderDone,
+  onClear,
   searchQuery,
   onSearch,
 }: Props) {
@@ -57,6 +60,7 @@ export default function ChatHeader({
   const [showDelete, setShowDelete] = useState(false)
   const [showPinned, setShowPinned] = useState(false)
   const [showReminders, setShowReminders] = useState(false)
+  const [showClear, setShowClear] = useState(false)
   const [showMobileSearch, setShowMobileSearch] = useState(false)
 
   function handleMenuOpen() {
@@ -173,6 +177,7 @@ export default function ChatHeader({
             onInfo={() => router.push(`/room/${roomId}/info`)}
             onEdit={() => setShowEdit(true)}
             onPinned={() => setShowPinned(true)}
+            onClear={() => setShowClear(true)}
             onDelete={() => setShowDelete(true)}
             onClose={() => setShowMenu(false)}
           />
@@ -228,6 +233,13 @@ export default function ChatHeader({
           initialIcon={icon}
           initialDescription={description}
           onClose={() => setShowEdit(false)}
+        />
+      )}
+
+      {showClear && (
+        <ClearMessagesModal
+          onConfirm={onClear}
+          onClose={() => setShowClear(false)}
         />
       )}
 
