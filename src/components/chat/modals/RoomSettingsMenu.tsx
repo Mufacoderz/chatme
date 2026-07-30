@@ -1,19 +1,21 @@
 "use client"
 
-import { FiEdit2, FiBookmark, FiTrash2 } from "react-icons/fi"
+import { FiInfo, FiEdit2, FiBookmark, FiTrash2 } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
   x: number
   y: number
+  onInfo: () => void
   onEdit: () => void
   onPinned: () => void
   onDelete: () => void
   onClose: () => void
 }
 
-export default function RoomSettingsMenu({ x, y, onEdit, onPinned, onDelete, onClose }: Props) {
+export default function RoomSettingsMenu({ x, y, onInfo, onEdit, onPinned, onDelete, onClose }: Props) {
   const items = [
+    { icon: <FiInfo size={15} />, label: "Info Room", onClick: onInfo, danger: false },
     { icon: <FiEdit2 size={15} />, label: "Edit Room", onClick: onEdit, danger: false },
     { icon: <FiBookmark size={15} />, label: "Pesan Dipin", onClick: onPinned, danger: false },
     { icon: <FiTrash2 size={15} />, label: "Hapus Room", onClick: onDelete, danger: true },

@@ -79,22 +79,27 @@ export default function ChatHeader({
             <FiArrowLeft size={20} />
           </button>
 
-          <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--surface2)] overflow-hidden">
-            <Image
-              src={getRoomIconSrc(icon)}
-              alt={icon}
-              width={50}
-              height={50}
-              className="object-contain"
-            />
-          </div>
+          <button
+            onClick={() => router.push(`/room/${roomId}/info`)}
+            className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-left"
+          >
+            <div className="neo-button w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--surface2)] overflow-hidden">
+              <Image
+                src={getRoomIconSrc(icon)}
+                alt={icon}
+                width={50}
+                height={50}
+                className="object-contain"
+              />
+            </div>
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-sm font-semibold truncate text-[var(--text)]">{name}</span>
-            <span className="text-xs text-[var(--text3)] truncate">
-              {reminders.length} reminder · {messageCount} pesan
-            </span>
-          </div>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="text-sm font-semibold truncate text-[var(--text)]">{name}</span>
+              <span className="text-xs text-[var(--text3)] truncate">
+                {reminders.length} reminder · {messageCount} pesan
+              </span>
+            </div>
+          </button>
         </div>
 
         {/* SEARCH BAR */}
@@ -165,6 +170,7 @@ export default function ChatHeader({
           <RoomSettingsMenu
             x={menuPos.x}
             y={menuPos.y}
+            onInfo={() => router.push(`/room/${roomId}/info`)}
             onEdit={() => setShowEdit(true)}
             onPinned={() => setShowPinned(true)}
             onDelete={() => setShowDelete(true)}
