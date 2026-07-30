@@ -1,7 +1,7 @@
 "use client"
 
 import { Message } from "@prisma/client"
-import { FiX, FiCheck } from "react-icons/fi"
+import { FiX, FiCheck, FiBell } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
@@ -40,8 +40,9 @@ export default function ReminderListModal({ reminders, onDone, onClose }: Props)
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate text-[var(--text)]">{r.text}</p>
                   {r.remindAt && (
-                    <p className="text-[11px] mt-0.5 text-[var(--accent)]">
-                      🔔 {new Date(r.remindAt).toLocaleDateString("id-ID", {
+                    <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[var(--accent)]">
+                      <FiBell size={11} />
+                      {new Date(r.remindAt).toLocaleDateString("id-ID", {
                         day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
                       })}
                     </p>

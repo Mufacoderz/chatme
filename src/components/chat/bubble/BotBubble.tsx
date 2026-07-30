@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, memo } from "react"
 import { Message } from "@prisma/client"
-import { FiBell } from "react-icons/fi"
+import { FiBell, FiClock, FiCheck } from "react-icons/fi"
 import Image from "next/image"
 
 type Props = {
@@ -85,8 +85,9 @@ const BotBubble = memo(function BotBubble({
           className="neo-card max-w-[240px] -rotate-[0.4deg] rounded-xl rounded-bl-sm px-4 py-2.5"
           style={{ background: "var(--surface2)" }}
         >
-          <p className="text-sm leading-relaxed text-[var(--text)] line-clamp-2">
-            🔔 Jangan lupa: {truncate(reminderText)}
+          <p className="flex items-start gap-1.5 text-sm leading-relaxed text-[var(--text)] line-clamp-2">
+            <FiBell size={14} className="mt-0.5 flex-shrink-0 text-[var(--accent)]" />
+            <span>Jangan lupa: {truncate(reminderText)}</span>
           </p>
         </div>
       </div>
@@ -100,9 +101,13 @@ const BotBubble = memo(function BotBubble({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="ml-10 text-[11px] text-[var(--text3)]"
+            className="ml-10 flex items-center gap-1 text-[11px] text-[var(--text3)]"
           >
-            {cardStatus === "done" ? "✓ Sudah diingatkan" : "⏰ Ditunda"}
+            {cardStatus === "done" ? (
+              <><FiCheck size={12} /> Sudah diingatkan</>
+            ) : (
+              <><FiClock size={12} /> Ditunda</>
+            )}
           </motion.p>
         )}
       </AnimatePresence>
