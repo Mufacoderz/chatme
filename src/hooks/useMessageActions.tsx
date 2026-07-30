@@ -5,15 +5,21 @@ import {
   useEditMessage, useDeleteMessage, useTogglePin,
   useToggleDone, useSetReminder, useMarkReminded, useChecklistToggle,
 } from "./useMessages"
+import type { ChatMessage } from "@/types/chat"
+
+type DeleteMessageActions = ReturnType<typeof useDeleteMessage>
 
 type MessageActions = {
   editMessage: ReturnType<typeof useEditMessage>
-  deleteMessage: ReturnType<typeof useDeleteMessage>
+  deleteMessage: DeleteMessageActions
   togglePin: ReturnType<typeof useTogglePin>
   toggleDone: ReturnType<typeof useToggleDone>
   setReminder: ReturnType<typeof useSetReminder>
   markReminded: ReturnType<typeof useMarkReminded>
   checklistToggle: ReturnType<typeof useChecklistToggle>
+  softDelete: (messageId: string) => void
+  undoDelete: (messageId: string) => void
+  hardDelete: (messageId: string) => void
 }
 
 const MessageActionsContext = createContext<MessageActions | null>(null)
@@ -34,7 +40,13 @@ export function MessageActionsProvider({
   const checklistToggle = useChecklistToggle(roomId)
 
   const value = useMemo(
-    () => ({ editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle }),
+    () => ({
+      editMessage, deleteMessage,
+      togglePin, toggleDone, setReminder, markReminded, checklistToggle,
+      softDelete: deleteMessage.softDelete,
+      undoDelete: deleteMessage.undoDelete,
+      hardDelete: deleteMessage.hardDelete,
+    }),
     [editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle]
   )
 

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { FiChevronUp, FiChevronDown, FiX } from "react-icons/fi"
 import ChatMessages from "./ChatMessages"
 import ChatHeader from "./ChatHeader"
 import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
+import UndoToast from "./UndoToast"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
 import { useMarkRemindedAndDone, useCheckReminders, useClearMessages } from "@/hooks/useMessages"
 import { MessageType } from "@prisma/client"
@@ -22,7 +23,7 @@ type Props = {
 
 function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onLoadMore }: Props) {
   const roomId = room.id
-  const { toggleDone, markReminded, setReminder } = useMessageActions()
+  const { toggleDone, markReminded, setReminder, undoDelete, hardDelete } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
   const clearMessages = useClearMessages(roomId)
 
@@ -30,6 +31,8 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const [snoozeSourceId, setSnoozeSourceId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
+  const [undoMessageId, setUndoMessageId] = useState<string | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const reminders = useMemo(
     () => messages.filter((m) => !m.isBot && !m.deletedAt && m.remindAt && !m.isRemindDone),
@@ -48,6 +51,14 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     setSearchQuery(query)
     setActiveIndex(0)
   }
+
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current)
+      }
+    }
+  }, [])
 
   const checkReminders = useCheckReminders()
 
@@ -80,6 +91,29 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
 
   function handleClear() {
     clearMessages.mutate({ roomId })
+  }
+
+  function handleSoftDelete(messageId: string) {
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      if (undoMessageId) hardDelete(undoMessageId)
+    }
+    setUndoMessageId(messageId)
+    undoTimerRef.current = setTimeout(() => {
+      hardDelete(messageId)
+      setUndoMessageId(null)
+      undoTimerRef.current = null
+    }, 5000)
+  }
+
+  function handleUndo() {
+    if (!undoMessageId) return
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      undoTimerRef.current = null
+    }
+    undoDelete(undoMessageId)
+    setUndoMessageId(null)
   }
 
   return (
@@ -147,6 +181,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         onLoadMore={onLoadMore}
         onBotDone={handleBotDone}
         onBotSnooze={handleBotSnooze}
+        onSoftDelete={handleSoftDelete}
         roomId={roomId}
         searchQuery={searchQuery}
         activeMatchId={matchedMessages[activeIndex]?.id ?? null}
@@ -156,6 +191,14 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         roomId={roomId}
         onCheckReminders={handleCheckReminders}
       />
+
+      {undoMessageId && (
+        <UndoToast
+          message="Pesan telah dihapus"
+          onUndo={handleUndo}
+          onTimeout={() => setUndoMessageId(null)}
+        />
+      )}
 
       {snoozeBotId && (
         <SnoozeModal

@@ -17,6 +17,7 @@ type Props = {
   roomId: string
   isNew?: boolean
   searchQuery?: string
+  onSoftDelete?: (messageId: string) => void
 }
 
 const BubbleWrapper = memo(function BubbleWrapper({
@@ -24,6 +25,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   roomId,
   isNew = false,
   searchQuery = "",
+  onSoftDelete,
 }: Props) {
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
   const [showRemind, setShowRemind] = useState(false)
@@ -31,7 +33,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   const [showEdit, setShowEdit] = useState(false)
   const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle } = useMessageActions()
+  const { editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle, softDelete, hardDelete } = useMessageActions()
 
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
@@ -69,13 +71,20 @@ const BubbleWrapper = memo(function BubbleWrapper({
     toggleDone.mutate({ id: message.id, isDone: !message.isDone })
   }, [message, toggleDone, checklistToggle])
 
+  const isDeleted = Boolean(message.deletedAt)
+
   const handleTogglePin = useCallback(() => {
     togglePin.mutate({ id: message.id, isPinned: !message.isPinned })
   }, [message.id, message.isPinned, togglePin])
 
   const handleDelete = useCallback(async () => {
-    await deleteMessage.mutateAsync({ id: message.id })
-  }, [message.id, deleteMessage])
+    if (isDeleted) {
+      hardDelete(message.id)
+    } else {
+      softDelete(message.id)
+      onSoftDelete?.(message.id)
+    }
+  }, [message.id, isDeleted, softDelete, hardDelete, onSoftDelete])
 
   const handleEdit = useCallback(async (text: string) => {
     await editMessage.mutateAsync({ id: message.id, text })
@@ -88,8 +97,6 @@ const BubbleWrapper = memo(function BubbleWrapper({
   const handleMarkReminded = useCallback(() => {
     markReminded.mutate({ id: message.id })
   }, [message.id, markReminded])
-
-  const isDeleted = Boolean(message.deletedAt)
 
   return (
     <>

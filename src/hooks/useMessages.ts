@@ -223,49 +223,55 @@ export function useEditMessage(roomId: string) {
   })
 }
 
-// ── Delete message (soft-delete then hard-delete) ───────────────────────
+// ── Delete message (soft + hard delete with undo) ──────────────────────
 
 export function useDeleteMessage(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
   const roomsKey = getRoomsKey()
 
-  return trpc.message.delete.useMutation({
+  const mutation = trpc.message.delete.useMutation({
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
-
-      let isHardDelete = false
-      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => {
-        const target = msgs.find((m) => m.id === variables.id)
-        if (target?.deletedAt) {
-          isHardDelete = true
-          return msgs.filter((m) => m.id !== variables.id)
-        }
-        return msgs.map((m) =>
-          m.id === variables.id ? { ...m, deletedAt: new Date() } : m
-        )
-      })
-
-      return { previous, isHardDelete }
+      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
+        msgs.filter((m) => m.id !== variables.id)
+      )
+      return { previous }
     },
-    onSuccess: (_data, _variables, context) => {
-      if (context?.isHardDelete) {
-        const allMsgs = getMessagesFromCache(queryClient, messagesKey)
-        const latest = allMsgs.reduce((a, b) =>
-          new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-        , allMsgs[0])
-        if (!latest) {
-          queryClient.invalidateQueries({ queryKey: roomsKey })
-        }
-        broadcastInvalidate(roomsKey)
+    onSuccess: (_data, variables) => {
+      const allMsgs = getMessagesFromCache(queryClient, messagesKey)
+      const latest = allMsgs.reduce((a, b) =>
+        new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+      , allMsgs[0])
+      if (!latest) {
+        queryClient.invalidateQueries({ queryKey: roomsKey })
       }
       broadcastInvalidate(messagesKey)
+      broadcastInvalidate(roomsKey)
     },
     onError: (_err, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(messagesKey, context.previous)
     },
   })
+
+  const softDelete = useCallback((messageId: string) => {
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
+      msgs.map((m) => m.id === messageId ? { ...m, deletedAt: new Date() } : m)
+    )
+  }, [queryClient, messagesKey])
+
+  const undoDelete = useCallback((messageId: string) => {
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
+      msgs.map((m) => m.id === messageId ? { ...m, deletedAt: undefined } : m)
+    )
+  }, [queryClient, messagesKey])
+
+  const hardDelete = useCallback((messageId: string) => {
+    mutation.mutate({ id: messageId })
+  }, [mutation])
+
+  return { ...mutation, softDelete, undoDelete, hardDelete }
 }
 
 // ── Clear all messages in room ──────────────────────────────────────────

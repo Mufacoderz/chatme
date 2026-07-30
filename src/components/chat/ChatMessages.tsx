@@ -14,6 +14,7 @@ type Props = {
   onLoadMore?: () => void
   onBotDone: (botMessageId: string, sourceMessageId: string) => void
   onBotSnooze: (botMessageId: string, sourceMessageId: string) => void
+  onSoftDelete?: (messageId: string) => void
   roomId: string
   searchQuery?: string
   activeMatchId?: string | null
@@ -92,6 +93,7 @@ export default function ChatMessages({
   onLoadMore,
   onBotDone,
   onBotSnooze,
+  onSoftDelete,
   roomId,
   searchQuery = "",
   activeMatchId = null,
@@ -295,6 +297,7 @@ export default function ChatMessages({
                       roomId={roomId}
                       isNew={isTemp}
                       searchQuery={searchQuery}
+                      onSoftDelete={onSoftDelete}
                     />
                   </div>
                 )
