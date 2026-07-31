@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import { getQueryKey } from "@trpc/react-query"
@@ -441,82 +441,6 @@ export function useMarkRemindedAndDone(roomId: string) {
       if (context?.previous) queryClient.setQueryData(messagesKey, context.previous)
     },
   })
-}
-
-// ── Check reminders (shared, race-safe, GLOBAL — semua room) ───────────
-//
-// v2: gak lagi di-scope roomId. Dulu poller nempel di RoomWrapper -> cuma
-// ngecek reminder room yang lagi kebuka doang, room lain diem aja sampe
-// dibuka manual. Sekarang checkReminders backend cek SEMUA room punya user,
-// dipanggil dari SATU poller global (lihat ReminderPoller.tsx) yang mounted
-// di Providers, independen dari navigasi antar room.
-//
-// Karena hasilnya bisa nyebar ke banyak room sekaligus, di-group per roomId
-// dulu baru di-merge ke cache masing-masing. Pengecekan "udah ada belum"
-// tetep dilakuin DI DALAM callback setQueryData (baca cache paling live),
-// bukan dari snapshot luar -> tetep race-safe kayak versi sebelumnya.
-export function useCheckReminders() {
-  const queryClient = useQueryClient()
-  const utils = trpc.useUtils()
-  const isCheckingRef = useRef(false)
-
-  return useCallback(async (): Promise<ChatMessage[]> => {
-    if (isCheckingRef.current) return []
-    isCheckingRef.current = true
-    try {
-      const newBotMessages = await utils.client.message.checkReminders.mutate()
-      if (newBotMessages.length === 0) return []
-
-      const byRoom = new Map<string, ChatMessage[]>()
-      for (const msg of newBotMessages) {
-        const list = byRoom.get(msg.roomId) ?? []
-        list.push(msg)
-        byRoom.set(msg.roomId, list)
-      }
-
-      const actuallyNew: ChatMessage[] = []
-
-      for (const [roomId, roomMessages] of byRoom) {
-        const messagesKey = getMessagesKey(roomId)
-        let newOnesForRoom: ChatMessage[] = []
-
-        queryClient.setQueryData(messagesKey, (old: MessagesPageData | undefined) => {
-          if (!old) {
-            // Room ini belum pernah dibuka sesi ini -> gak ada cache buat
-            // di-merge. Begitu dibuka nanti, message.list bakal fetch fresh
-            // dari server (row-nya udah ada di DB). Tetep dianggap "baru"
-            // buat keperluan notifikasi.
-            newOnesForRoom = roomMessages
-            return old
-          }
-          const all = old.pages.flatMap((p) => p.messages)
-          const existingIds = new Set(all.map((m) => m.id))
-          newOnesForRoom = roomMessages.filter((m) => !existingIds.has(m.id))
-          if (newOnesForRoom.length === 0) return old
-
-          const updated = [...all, ...newOnesForRoom]
-          const pageSize = old.pages[old.pages.length - 1]?.messages.length || MESSAGES_LIMIT
-          const pages: MessagesPageData["pages"] = []
-          for (let i = 0; i < updated.length; i += pageSize) {
-            pages.push({ messages: updated.slice(i, i + pageSize), hasMore: true })
-          }
-          if (pages.length > 0) {
-            pages[pages.length - 1].hasMore = old.pages[old.pages.length - 1]?.hasMore ?? false
-          }
-          return { ...old, pages }
-        })
-
-        actuallyNew.push(...newOnesForRoom)
-      }
-
-      return actuallyNew
-    } catch (err) {
-      console.error("[checkReminders] gagal cek reminder:", err)
-      return []
-    } finally {
-      isCheckingRef.current = false
-    }
-  }, [queryClient, utils])
 }
 
 // ── Checklist toggle item ───────────────────────────────────────────────

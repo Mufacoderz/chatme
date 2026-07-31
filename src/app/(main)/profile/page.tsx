@@ -4,6 +4,7 @@ import { FiArrowLeft, FiCalendar, FiMail, FiShield, FiLogOut } from "react-icons
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import ProfileHeader from "@/components/profile/ProfileHeader"
+import EnablePushButton from "@/components/profile/EnablePushButton"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -86,6 +87,8 @@ export default async function ProfilePage() {
           <FiCalendar size={14} />
           <span>Bergabung sejak {joinedLabel}</span>
         </div>
+
+        <EnablePushButton />
 
         <form
           action={async () => {

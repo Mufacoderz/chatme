@@ -8,7 +8,7 @@ import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
 import UndoToast from "./UndoToast"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
-import { useMarkRemindedAndDone, useCheckReminders, useClearMessages } from "@/hooks/useMessages"
+import { useMarkRemindedAndDone, useClearMessages } from "@/hooks/useMessages"
 import { MessageType } from "@prisma/client"
 import type { ChatMessage } from "@/types/chat"
 
@@ -51,12 +51,6 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   function handleSearch(query: string) {
     setSearchQuery(query)
     setActiveIndex(0)
-  }
-
-  const checkReminders = useCheckReminders()
-
-  async function handleCheckReminders() {
-    await checkReminders()
   }
 
   const handleBotDone = useCallback((botMessageId: string, sourceMessageId: string) => {
@@ -203,7 +197,6 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
 
       <ChatInput
         roomId={roomId}
-        onCheckReminders={handleCheckReminders}
       />
 
       {undoMessageId && (

@@ -28,4 +28,28 @@ const serwist = new Serwist({
   },
 })
 
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {}
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? "Chatme", {
+      body: data.body ?? "",
+      icon: "/icon-192.png",
+      tag: data.tag,
+      data: { url: data.url ?? "/" },
+    })
+  )
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url ?? "/"
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then((clientsArr) => {
+      const existing = clientsArr.find((c) => c.url.includes(url))
+      if (existing) return existing.focus()
+      return self.clients.openWindow(url)
+    })
+  )
+})
+
 serwist.addEventListeners()
