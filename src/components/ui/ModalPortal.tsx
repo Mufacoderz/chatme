@@ -1,15 +1,19 @@
 "use client"
 
 import { createPortal } from "react-dom"
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
+
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+}
 
 export function ModalPortal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false)
+  const hydrated = useHydrated()
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) return null
+  if (!hydrated) return null
   return createPortal(children, document.body)
 }

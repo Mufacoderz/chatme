@@ -4,7 +4,7 @@ import { useEffect, useState, memo } from "react"
 import { Message } from "@prisma/client"
 import { IoCheckmarkDone } from "react-icons/io5"
 import { FiBell, FiBookmark, FiCheck } from "react-icons/fi"
-import { highlightText, parseFormattedText } from "@/lib/messageFormat"
+import { parseFormattedText } from "@/lib/messageFormat"
 
 type Props = {
   message: Message

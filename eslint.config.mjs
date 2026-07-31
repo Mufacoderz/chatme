@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated file dari Serwist saat build.
+    "public/sw.js",
   ]),
 ]);
 

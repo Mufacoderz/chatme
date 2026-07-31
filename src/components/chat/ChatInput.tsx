@@ -89,7 +89,6 @@ export default function ChatInput({
       e.preventDefault()
       const cursorPos = el.selectionStart
       const currentLineStart = el.value.slice(0, cursorPos).lastIndexOf("\n") + 1
-      const currentLine = el.value.slice(currentLineStart, cursorPos)
 
       if (continuation === "") {
         const newValue = el.value.slice(0, currentLineStart) + el.value.slice(cursorPos)
