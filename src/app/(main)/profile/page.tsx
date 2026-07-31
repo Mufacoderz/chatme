@@ -5,6 +5,7 @@ import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import ProfileHeader from "@/components/profile/ProfileHeader"
 import EnablePushButton from "@/components/profile/EnablePushButton"
+import DangerZone from "@/components/profile/DangerZone"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -105,6 +106,8 @@ export default async function ProfilePage() {
             Logout
           </button>
         </form>
+
+        <DangerZone />
       </div>
     </main>
   )
