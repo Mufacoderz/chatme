@@ -123,7 +123,7 @@ export const messageRouter = router({
 
       if (typeof data.text === "string") {
         data.text = (data.text as string).trim()
-        if (!data.text) throw new TRPCError({ code: "BAD_REQUEST", message: "Pesan tidak boleh kosong" })
+        if (!data.text) throw new TRPCError({ code: "BAD_REQUEST", message: "Catatan tidak boleh kosong" })
         data.editedAt = new Date()
       }
       if (typeof data.remindSnoozeAt === "string") data.remindSnoozeAt = new Date(data.remindSnoozeAt as string)
@@ -134,7 +134,7 @@ export const messageRouter = router({
       })
       if (!owned) throw new TRPCError({ code: "NOT_FOUND" })
       if ("text" in data && (owned.isDone || owned.type !== "TEXT")) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Pesan ini tidak dapat diedit" })
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Catatan ini tidak dapat diedit" })
       }
 
       return ctx.prisma.message.update({ where: { id }, data })

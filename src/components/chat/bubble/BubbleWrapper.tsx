@@ -153,7 +153,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
 
       {showDelete && (
         <DeleteMessageModal
-          label={message.type === MessageType.CHECKLIST ? "checklist" : "pesan"}
+          label={message.type === MessageType.CHECKLIST ? "checklist" : "catatan"}
           onConfirm={handleDelete}
           onClose={() => setShowDelete(false)}
         />

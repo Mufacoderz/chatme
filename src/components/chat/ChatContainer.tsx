@@ -201,7 +201,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
 
       {undoMessageId && (
         <UndoToast
-          message="Pesan telah dihapus"
+          message="Catatan telah dihapus"
           onUndo={handleUndo}
           onTimeout={() => setUndoMessageId(null)}
         />

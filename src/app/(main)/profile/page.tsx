@@ -130,7 +130,7 @@ export default async function ProfilePage() {
               <div className="-rotate-1 neo-card rounded-xl bg-[var(--accent)] p-4 text-center">
                 <FiMessageSquare size={14} className="mx-auto mb-2 text-[var(--accent-ink)]" />
                 <p className="font-sora text-xl font-black text-[var(--accent-ink)]">{noteCount}</p>
-                <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Pesan</p>
+                <p className="mt-1 text-[11px] font-bold text-[var(--accent-ink)]">Catatan</p>
               </div>
               <div className="rotate-1 neo-card rounded-xl bg-[var(--accent)] p-4 text-center">
                 <FiBell size={14} className="mx-auto mb-2 text-[var(--accent-ink)]" />

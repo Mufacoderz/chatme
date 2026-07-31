@@ -100,7 +100,7 @@ export default function ChatHeader({
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="text-sm font-semibold truncate text-[var(--text)]">{name}</span>
               <span className="text-xs text-[var(--text3)] truncate">
-                {reminders.length} reminder · {messageCount} pesan
+                {reminders.length} reminder · {messageCount} catatan
               </span>
             </div>
           </button>
@@ -118,7 +118,7 @@ export default function ChatHeader({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearch(e.target.value)}
-              placeholder="Cari pesan..."
+              placeholder="Cari catatan..."
               className="neo-input w-full rounded-xl bg-[var(--surface2)] py-1.5 pl-9 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--text3)] outline-none focus:ring-1 focus:ring-[var(--accent)] transition"
             />
 
@@ -137,7 +137,7 @@ export default function ChatHeader({
           <button
             onClick={() => setShowMobileSearch(value => !value)}
             className="neo-button relative rounded-lg bg-[var(--surface2)] p-2 text-[var(--text2)] transition md:hidden"
-            aria-label="Cari pesan"
+            aria-label="Cari catatan"
             aria-expanded={showMobileSearch}
           >
             <IoSearch size={18} />
@@ -196,7 +196,7 @@ export default function ChatHeader({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearch(e.target.value)}
-              placeholder="Cari pesan..."
+              placeholder="Cari catatan..."
               className="neo-input w-full rounded-xl bg-[var(--surface)] py-2.5 pl-9 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--text3)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
             <button

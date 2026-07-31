@@ -55,7 +55,7 @@ export default function LoginPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">Inbox</p>
-                    <p className="text-xs text-[var(--text3)]">3 pesan aktif</p>
+                    <p className="text-xs text-[var(--text3)]">3 catatan aktif</p>
                   </div>
                 </div>
 

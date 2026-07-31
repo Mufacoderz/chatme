@@ -5,7 +5,7 @@ import { FiAlertTriangle, FiX } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
-  label: "pesan" | "checklist"
+  label: "catatan" | "checklist"
   onConfirm: () => Promise<void>
   onClose: () => void
 }
@@ -47,7 +47,7 @@ export default function DeleteMessageModal({ label, onConfirm, onClose }: Props)
         <p className="mb-6 text-sm leading-6 text-[var(--text2)]">
           {label === "checklist"
             ? "Checklist beserta seluruh itemnya akan dihapus permanen."
-            : "Pesan ini akan dihapus permanen dan tidak bisa dikembalikan."}
+            : "Catatan ini akan dihapus permanen dan tidak bisa dikembalikan."}
         </p>
 
         <div className="flex gap-3">

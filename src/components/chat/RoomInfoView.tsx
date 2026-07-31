@@ -93,13 +93,13 @@ export default function RoomInfoView({ roomId }: Props) {
         <div className="neo-card rounded-xl p-4 bg-[var(--surface)]">
           <FiMessageSquare size={16} className="text-[var(--accent)] mb-2" />
           <p className="text-xl font-bold font-sora text-[var(--text)]">{info.totalPesan}</p>
-          <p className="text-xs text-[var(--text3)]">Total Pesan</p>
+          <p className="text-xs text-[var(--text3)]">Total Catatan</p>
         </div>
 
         <button onClick={() => setShowPinned(true)} className="neo-card rounded-xl p-4 bg-[var(--surface)] text-left">
           <FiBookmark size={16} className="text-[var(--accent)] mb-2" />
           <p className="text-xl font-bold font-sora text-[var(--text)]">{info.pesanDipin}</p>
-          <p className="text-xs text-[var(--text3)]">Pesan Dipin</p>
+          <p className="text-xs text-[var(--text3)]">Catatan Dipin</p>
         </button>
 
         <button onClick={() => setShowReminders(true)} className="neo-card rounded-xl p-4 bg-[var(--surface)] text-left">

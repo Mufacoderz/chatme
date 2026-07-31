@@ -33,7 +33,7 @@ export default function EditMessageModal({ initialText, onSave, onClose }: Props
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FiEdit2 size={16} className="text-[var(--accent)]" />
-            <h2 className="font-sora text-base font-bold">Edit Pesan</h2>
+            <h2 className="font-sora text-base font-bold">Edit Catatan</h2>
           </div>
           <button
             type="button"

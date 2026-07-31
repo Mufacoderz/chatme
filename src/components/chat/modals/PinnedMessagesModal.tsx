@@ -44,7 +44,7 @@ export default function PinnedMessagesModal({ messages, onClose }: Props) {
           <div className="flex items-center gap-2">
             <FiBookmark size={15} className="text-[var(--accent)]" />
             <p className="font-semibold font-sora text-sm text-[var(--text)]">
-              Pesan Dipin
+              Catatan Dipin
             </p>
           </div>
           <button onClick={onClose} className="text-[var(--text3)]">
@@ -54,7 +54,7 @@ export default function PinnedMessagesModal({ messages, onClose }: Props) {
 
         {pinned.length === 0 ? (
           <p className="text-sm text-center py-8 text-[var(--text3)]">
-            Belum ada pesan yang dipin
+            Belum ada catatan yang dipin
           </p>
         ) : (
           <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">

@@ -259,7 +259,7 @@ export default function ChatMessages({
           <div className="flex justify-center py-2">
             <div className="neo-card rotate-1 rounded-lg bg-[var(--surface2)] px-4 py-2 text-xs font-semibold text-[var(--text3)] flex items-center gap-2">
               <span className="inline-block w-3 h-3 border-2 border-[var(--text3)] border-t-transparent rounded-full animate-spin" />
-              Memuat pesan lama...
+              Memuat catatan lama...
             </div>
           </div>
         )}

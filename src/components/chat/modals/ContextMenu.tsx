@@ -42,7 +42,7 @@ export default function ContextMenu({
     }] : []),
     ...(!isChecklist && !isDone ? [{
       icon: <FiEdit2 size={15} />,
-      label: "Edit Pesan",
+      label: "Edit Catatan",
       onClick: onEdit,
       danger: false,
     }] : []),
@@ -60,7 +60,7 @@ export default function ContextMenu({
     },
     {
       icon: <FiBookmark size={15} />,
-      label: isPinned ? "Unpin" : isChecklist ? "Pin Checklist" : "Pin Pesan",
+      label: isPinned ? "Unpin" : isChecklist ? "Pin Checklist" : "Pin Catatan",
       onClick: onTogglePin,
       danger: false,
     },

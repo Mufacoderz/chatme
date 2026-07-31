@@ -18,14 +18,14 @@ export default function ClearMessagesModal({ onConfirm, onClose }: Props) {
       >
         <div className="neo-panel w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <p className="font-semibold font-sora text-sm text-[var(--text)]">Bersihkan Pesan</p>
+            <p className="font-semibold font-sora text-sm text-[var(--text)]">Bersihkan Catatan</p>
             <button onClick={onClose} className="text-[var(--text3)]">
               <FiX size={18} />
             </button>
           </div>
 
           <p className="text-sm text-[var(--text3)] mb-6">
-            Semua pesan di room ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?
+            Semua catatan di room ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?
           </p>
 
           <div className="flex gap-3">

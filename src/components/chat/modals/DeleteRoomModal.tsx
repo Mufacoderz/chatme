@@ -50,7 +50,7 @@ export default function DeleteRoomModal({ roomId, roomName, onClose }: Props) {
           Yakin mau hapus room <span className="font-semibold text-[var(--text)]">{roomName}</span>?
         </p>
         <p className="text-xs text-[var(--text3)] mb-6">
-          Semua pesan di dalam room ini akan ikut terhapus dan tidak bisa dikembalikan.
+          Semua catatan di dalam room ini akan ikut terhapus dan tidak bisa dikembalikan.
         </p>
 
         <div className="flex gap-3">
