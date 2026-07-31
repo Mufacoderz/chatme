@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { writeRatelimit, strictRatelimit } from "./rateLimit"
 
 export async function createTRPCContext() {
   const session = await auth()
@@ -28,4 +29,26 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
       userId: ctx.session.user.id,
     },
   })
+})
+
+export const rateLimitedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const { success } = await writeRatelimit.limit(ctx.userId)
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Terlalu banyak request, coba lagi sebentar",
+    })
+  }
+  return next()
+})
+
+export const strictRateLimitedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const { success } = await strictRatelimit.limit(ctx.userId)
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Terlalu banyak request, coba lagi sebentar",
+    })
+  }
+  return next()
 })

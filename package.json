@@ -22,6 +22,8 @@
     "@trpc/next": "^11.18.0",
     "@trpc/react-query": "^11.18.0",
     "@trpc/server": "^11.18.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "autoprefixer": "^10.5.0",
     "framer-motion": "^12.38.0",
     "idb-keyval": "^6.2.5",

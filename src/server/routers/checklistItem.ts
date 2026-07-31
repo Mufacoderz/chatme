@@ -1,9 +1,9 @@
 import { z } from "zod"
-import { router, protectedProcedure } from "../trpc"
+import { router, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 
 export const checklistItemRouter = router({
-  toggle: protectedProcedure
+  toggle: rateLimitedProcedure
     .input(z.object({ id: z.string(), isDone: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.prisma.checklistItem.findFirst({

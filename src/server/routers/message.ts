@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { MessageType } from "@prisma/client"
-import { router, protectedProcedure } from "../trpc"
+import { router, protectedProcedure, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 
 export const messageRouter = router({
@@ -72,7 +72,7 @@ export const messageRouter = router({
       })
     }),
 
-  send: protectedProcedure
+  send: rateLimitedProcedure
     .input(z.object({
       roomId: z.string(),
       text: z.string().min(1),
@@ -111,7 +111,7 @@ export const messageRouter = router({
       })
     }),
 
-  update: protectedProcedure
+  update: rateLimitedProcedure
     .input(z.object({
       id: z.string(),
       text: z.string().optional(),

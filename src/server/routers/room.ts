@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { router, protectedProcedure } from "../trpc"
+import { router, protectedProcedure, strictRateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 import { getRoomsForUser } from "@/server/services/rooms"
 import { DEFAULT_ROOM_ICON, ROOM_ICON_REGEX } from "@/lib/roomIcons"
@@ -9,7 +9,7 @@ export const roomRouter = router({
     return getRoomsForUser(ctx.prisma, ctx.userId)
   }),
 
-  create: protectedProcedure
+  create: strictRateLimitedProcedure
     .input(z.object({
       name: z.string().min(1),
       icon: z.string().regex(ROOM_ICON_REGEX).optional(),
