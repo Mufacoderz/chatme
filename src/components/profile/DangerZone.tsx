@@ -1,17 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { FiTrash2 } from "react-icons/fi"
+import { FiAlertTriangle, FiTrash2 } from "react-icons/fi"
 import DeleteAccountModal from "./DeleteAccountModal"
 
 export default function DangerZone() {
   const [showModal, setShowModal] = useState(false)
 
   return (
-    <div className="mt-5 neo-card rounded-xl border-2 border-[var(--coral)] p-4">
-      <p className="text-xs font-bold uppercase text-[var(--coral)]">Zona Berbahaya</p>
-      <p className="mt-1 text-xs text-[var(--text3)]">
-        Menghapus akun akan menghilangkan seluruh data kamu secara permanen.
+    <div className="neo-card rounded-xl border-2 border-[var(--coral)] bg-[var(--surface)] p-4">
+      <div className="flex items-center gap-1.5">
+        <FiAlertTriangle size={13} className="text-[var(--coral)]" />
+        <p className="text-[11px] font-black uppercase tracking-widest text-[var(--coral)]">Danger Zone</p>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-[var(--text3)]">
+        Menghapus akun akan menghilangkan seluruh data kamu secara permanen dan tidak bisa dibatalkan.
       </p>
       <button
         onClick={() => setShowModal(true)}
