@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react"
 import Image from "next/image"
+import Link from "next/link"
 import { FiArrowRight, FiCheckCircle, FiClock, FiLock } from "react-icons/fi"
 
 export default function LoginPage() {
@@ -129,7 +130,11 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-5 text-center text-xs leading-5 text-[var(--text3)]">
-              Dengan masuk, kamu bisa melanjutkan workspace yang tersimpan di akunmu.
+              Dengan masuk, kamu setuju dengan{" "}
+              <Link href="/privacy" className="underline hover:text-[var(--text2)]">
+                Kebijakan Privasi
+              </Link>{" "}
+              Chatme.
             </p>
           </div>
         </section>

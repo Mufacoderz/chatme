@@ -108,6 +108,10 @@ export default async function ProfilePage() {
         </form>
 
         <DangerZone />
+
+        <p className="mt-6 text-center text-xs text-[var(--text3)]">
+          <Link href="/privacy" className="underline">Kebijakan Privasi</Link>
+        </p>
       </div>
     </main>
   )
