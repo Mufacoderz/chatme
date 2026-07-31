@@ -12,6 +12,11 @@ const withSerwist = withSerwistInit({
 })
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
+  },
   experimental: {
     staleTimes: {
       dynamic: 30,

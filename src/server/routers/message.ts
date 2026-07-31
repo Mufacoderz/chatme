@@ -75,7 +75,7 @@ export const messageRouter = router({
   send: rateLimitedProcedure
     .input(z.object({
       roomId: z.string(),
-      text: z.string().min(1),
+      text: z.string().min(1).max(10000),
       type: z.nativeEnum(MessageType).default(MessageType.TEXT),
       items: z.array(z.string()).optional(),
     }))
