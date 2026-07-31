@@ -105,7 +105,7 @@ export function updateMessagesCacheFlatten(
     }
     const all = old.pages.flatMap((p) => p.messages)
     const updated = updater(all)
-    const pageSize = old.pages[old.pages.length - 1]?.messages.length ?? 50
+    const pageSize = old.pages[old.pages.length - 1]?.messages.length || MESSAGES_LIMIT
     const pages: { messages: ChatMessage[]; hasMore: boolean }[] = []
     for (let i = 0; i < updated.length; i += pageSize) {
       pages.push({ messages: updated.slice(i, i + pageSize), hasMore: true })
@@ -495,7 +495,7 @@ export function useCheckReminders() {
           if (newOnesForRoom.length === 0) return old
 
           const updated = [...all, ...newOnesForRoom]
-          const pageSize = old.pages[old.pages.length - 1]?.messages.length ?? MESSAGES_LIMIT
+          const pageSize = old.pages[old.pages.length - 1]?.messages.length || MESSAGES_LIMIT
           const pages: MessagesPageData["pages"] = []
           for (let i = 0; i < updated.length; i += pageSize) {
             pages.push({ messages: updated.slice(i, i + pageSize), hasMore: true })
