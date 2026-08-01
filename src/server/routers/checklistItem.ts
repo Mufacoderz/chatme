@@ -3,6 +3,7 @@ import { router, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 
 export const checklistItemRouter = router({
+  //toggle item checklist + sinkron status pesan
   toggle: rateLimitedProcedure
     .input(z.object({ id: z.string(), isDone: z.boolean() }))
     .mutation(async ({ ctx, input }) => {

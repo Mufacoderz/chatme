@@ -22,4 +22,4 @@ writeFileSync(
   join(process.cwd(), "src/lib/roomIcons.generated.ts"),
   `// FILE INI DI-GENERATE OTOMATIS, JANGAN EDIT MANUAL.\n// Regenerate: node scripts/generate-room-icons.mjs\n\nexport const TOTAL_ROOM_ICONS = ${numbers.length}\n`
 )
-console.log(`✅ ${numbers.length} icon terdeteksi, roomIcons.generated.ts di-update.`)
+// console.log(`${numbers.length} icon terdeteksi, roomIcons.generated.ts di-update.`)

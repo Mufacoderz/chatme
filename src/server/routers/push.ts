@@ -2,6 +2,7 @@ import { z } from "zod"
 import { router, protectedProcedure, strictRateLimitedProcedure } from "../trpc"
 
 export const pushRouter = router({
+  //simpan/update subscription push
   subscribe: strictRateLimitedProcedure
     .input(z.object({
       subscription: z.object({
@@ -26,6 +27,7 @@ export const pushRouter = router({
       })
     }),
 
+  //hapus subscription push
   unsubscribe: protectedProcedure
     .input(z.object({ endpoint: z.string() }))
     .mutation(async ({ ctx, input }) => {

@@ -25,7 +25,6 @@ type Props = {
   onReminderDone: (messageId: string) => void
   onClear: () => void
 
-  // Props untuk search (baru)
   searchQuery: string
   onSearch: (query: string) => void
 }
@@ -106,7 +105,6 @@ export default function ChatHeader({
           </button>
         </div>
 
-        {/* SEARCH BAR */}
         <div className="hidden flex-1 justify-center px-2 md:flex">
           <div className="relative w-full max-w-xs">
             <IoSearch
@@ -143,7 +141,6 @@ export default function ChatHeader({
             <IoSearch size={18} />
           </button>
 
-          {/* bell + badge reminder */}
           <button
             onClick={() => setShowReminders(true)}
             className="neo-button relative rounded-lg bg-[var(--surface2)] p-2 transition"
@@ -159,7 +156,6 @@ export default function ChatHeader({
             )}
           </button>
 
-          {/* titik tiga */}
           <button
             ref={menuBtnRef}
             onClick={handleMenuOpen}
@@ -169,7 +165,6 @@ export default function ChatHeader({
           </button>
         </div>
 
-        {/* dropdown menu */}
         {showMenu && (
           <RoomSettingsMenu
             x={menuPos.x}
@@ -213,7 +208,6 @@ export default function ChatHeader({
         </div>
       )}
 
-      {/* Modal Reminder List */}
       {showReminders && (
         <ReminderListModal
           reminders={reminders}
@@ -225,7 +219,6 @@ export default function ChatHeader({
         />
       )}
 
-      {/* Modal lainnya */}
       {showEdit && (
         <EditRoomModal
           roomId={roomId}

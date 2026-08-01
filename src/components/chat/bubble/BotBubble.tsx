@@ -94,7 +94,6 @@ const BotBubble = memo(function BotBubble({
 
       <p className="ml-10 text-[10px] tabular-nums text-[var(--text3)]">{time}</p>
 
-      {/* status label setelah card hilang */}
       <AnimatePresence>
         {!showCard && cardStatus !== "idle" && (
           <motion.p
@@ -112,7 +111,6 @@ const BotBubble = memo(function BotBubble({
         )}
       </AnimatePresence>
 
-      {/* card pengingat */}
       <AnimatePresence>
         {showCard && (
           <motion.div

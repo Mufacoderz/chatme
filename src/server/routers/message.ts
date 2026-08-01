@@ -4,6 +4,7 @@ import { router, protectedProcedure, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 
 export const messageRouter = router({
+  //list catatan per room (pagination)
   list: protectedProcedure
     .input(z.object({
       roomId: z.string(),
@@ -41,6 +42,7 @@ export const messageRouter = router({
       return { messages, hasMore }
     }),
 
+  //list catatan yang dipin
   listPinned: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -57,6 +59,7 @@ export const messageRouter = router({
       })
     }),
 
+  //list reminder yang masih aktif
   listActiveReminders: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -72,6 +75,7 @@ export const messageRouter = router({
       })
     }),
 
+  //kirim catatan / checklist baru
   send: rateLimitedProcedure
     .input(z.object({
       roomId: z.string(),
@@ -111,6 +115,7 @@ export const messageRouter = router({
       })
     }),
 
+  //edit teks catatan / snooze reminder
   update: rateLimitedProcedure
     .input(z.object({
       id: z.string(),
@@ -140,6 +145,7 @@ export const messageRouter = router({
       return ctx.prisma.message.update({ where: { id }, data })
     }),
 
+  //tandai catatan selesai/belum
   toggleDone: protectedProcedure
     .input(z.object({ id: z.string(), isDone: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
@@ -152,6 +158,7 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
+  //pin / lepas pin catatan
   togglePin: protectedProcedure
     .input(z.object({ id: z.string(), isPinned: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
@@ -164,6 +171,7 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
+  //set / hapus reminder
   setReminder: protectedProcedure
     .input(z.object({ id: z.string(), remindAt: z.string().nullable() }))
     .mutation(async ({ ctx, input }) => {
@@ -179,6 +187,7 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
+  //tandai sudah diingatkan
   markReminded: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -191,6 +200,7 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
+  //tandai sudah diingatkan + selesai sekaligus
   markRemindedAndDone: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -203,22 +213,24 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
+    //hapus smua catatan
   clearAll: protectedProcedure
-    .input(z.object({ roomId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const room = await ctx.prisma.room.findFirst({
-        where: { id: input.roomId, userId: ctx.userId },
-        select: { id: true },
-      })
-      if (!room) throw new TRPCError({ code: "NOT_FOUND" })
+  .input(z.object({ roomId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const room = await ctx.prisma.room.findFirst({
+      where: { id: input.roomId, userId: ctx.userId },
+      select: { id: true },
+    })
+    if (!room) throw new TRPCError({ code: "NOT_FOUND" })
 
-      await ctx.prisma.message.deleteMany({
-        where: { roomId: input.roomId, isBot: false },
-      })
+    await ctx.prisma.message.deleteMany({
+      where: { roomId: input.roomId },
+    })
 
-      return { success: true }
-    }),
+    return { success: true }
+  }),
 
+  //hapus satu catatan
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -229,6 +241,7 @@ export const messageRouter = router({
       return { success: true }
     }),
 
+  //edit ulang judul & item checklist
   updateChecklist: protectedProcedure
     .input(z.object({
       id: z.string(),
@@ -269,6 +282,7 @@ export const messageRouter = router({
       })
     }),
 
+  //generate bubble bot buat reminder yang jatuh tempo
   checkReminders: protectedProcedure
     .mutation(async ({ ctx }) => {
       const pendingReminders = await ctx.prisma.message.findMany({

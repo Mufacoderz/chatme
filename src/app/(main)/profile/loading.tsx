@@ -13,7 +13,6 @@ export default function ProfileLoading() {
         </div>
 
         <div className="flex flex-col gap-6">
-          {/* Akun */}
           <section>
             <SkeletonBlock className="mb-2 h-3 w-12 rounded-full" />
             <div className="neo-panel rounded-2xl bg-[var(--surface)] p-5 sm:p-7">
@@ -42,7 +41,6 @@ export default function ProfileLoading() {
             </div>
           </section>
 
-          {/* Aktivitas */}
           <section>
             <SkeletonBlock className="mb-2 h-3 w-14 rounded-full" />
             <div className="grid grid-cols-3 gap-3">
@@ -56,19 +54,16 @@ export default function ProfileLoading() {
             </div>
           </section>
 
-          {/* Preferensi */}
           <section>
             <SkeletonBlock className="mb-2 h-3 w-16 rounded-full" />
             <SkeletonBlock className="h-12 w-full rounded-xl" />
           </section>
 
-          {/* Sesi */}
           <section>
             <SkeletonBlock className="mb-2 h-3 w-10 rounded-full" />
             <SkeletonBlock className="h-12 w-full rounded-xl" />
           </section>
 
-          {/* Danger Zone */}
           <section>
             <SkeletonBlock className="mb-2 h-3 w-20 rounded-full" />
             <SkeletonBlock className="h-16 w-full rounded-xl" />

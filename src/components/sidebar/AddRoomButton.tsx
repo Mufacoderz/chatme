@@ -33,7 +33,6 @@ export default function AddRoomButton() {
 
   return (
     <>
-      {/* FAB absolute — tidak makan space layout, list room full */}
       <button
         onClick={() => setOpen(true)}
         className="neo-button absolute bottom-6 right-5 z-20 flex h-12 w-12 rotate-3 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-ink)] transition-all duration-200 hover:rotate-12"

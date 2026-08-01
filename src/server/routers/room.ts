@@ -5,10 +5,12 @@ import { getRoomsForUser } from "@/server/services/rooms"
 import { DEFAULT_ROOM_ICON, ROOM_ICON_REGEX } from "@/lib/roomIcons"
 
 export const roomRouter = router({
+  //list semua room user
   list: protectedProcedure.query(async ({ ctx }) => {
     return getRoomsForUser(ctx.prisma, ctx.userId)
   }),
 
+  //buat room baru
   create: strictRateLimitedProcedure
     .input(z.object({
       name: z.string().min(1),
@@ -26,6 +28,7 @@ export const roomRouter = router({
       })
     }),
 
+  //edit room (nama/ikon/deskripsi)
   update: protectedProcedure
     .input(z.object({
       id: z.string(),
@@ -49,6 +52,7 @@ export const roomRouter = router({
       })
     }),
 
+  //ambil data room by id
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -60,6 +64,7 @@ export const roomRouter = router({
       return room
     }),
 
+  //statistik lengkap room
   getInfo: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -101,6 +106,7 @@ export const roomRouter = router({
       }
     }),
 
+  //hapus room
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {

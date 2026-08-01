@@ -53,13 +53,11 @@ export default function RoomInfoView({ roomId }: Props) {
   if (isLoading || !info) {
     return (
       <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="pb-10">
-        {/* Header */}
         <div className="m-3 mb-0 flex items-center gap-3 rounded-xl bg-[var(--surface)] px-3 py-3 neo-panel">
           <SkeletonBlock className="h-8 w-8 rounded-lg" />
           <SkeletonBlock className="h-4 w-24 rounded-full" />
         </div>
 
-        {/* Hero */}
         <div className="relative m-3 mt-4 rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
           <div className="absolute left-0 top-0 h-full w-2 bg-[var(--surface3)]" />
           <div className="flex items-start gap-4 pl-7 pr-5 py-5">
@@ -72,7 +70,6 @@ export default function RoomInfoView({ roomId }: Props) {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="mx-3 mt-3 flex gap-3">
           <SkeletonBlock className="flex-1 rounded-xl" />
           <div className="flex flex-1 flex-col gap-3">
@@ -82,7 +79,6 @@ export default function RoomInfoView({ roomId }: Props) {
           </div>
         </div>
 
-        {/* Kelola Room */}
         <div className="m-3 mt-4">
           <SkeletonBlock className="mb-2 h-3 w-24 rounded-full" />
           <div className="rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
@@ -114,7 +110,6 @@ export default function RoomInfoView({ roomId }: Props) {
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="pb-10">
-      {/* Header */}
       <div className="m-3 mb-0 flex items-center gap-3 rounded-xl bg-[var(--surface)] px-3 py-3 neo-panel">
         <button
           onClick={() => router.back()}
@@ -125,9 +120,8 @@ export default function RoomInfoView({ roomId }: Props) {
         <p className="font-semibold font-sora text-base text-[var(--text)]">Info Room</p>
       </div>
 
-      {/* Hero — ID card layout, not the usual centered avatar block */}
       <div className="relative m-3 mt-4 rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
-        <div className="absolute left-0 top-0 h-full w-2 bg-[var(--accent)]" />
+        {/* <div className="absolute left-0 top-0 h-full w-2 bg-[var(--accent)]" /> */}
         <div className="flex items-start gap-4 pl-7 pr-5 py-5">
           <div className="neo-button shrink-0 w-20 h-20 rounded-xl flex items-center justify-center bg-[var(--surface2)] overflow-hidden -rotate-2">
             <Image src={getRoomIconSrc(info.icon)} alt={info.icon} width={80} height={80} className="object-contain" />
@@ -154,7 +148,6 @@ export default function RoomInfoView({ roomId }: Props) {
         </div>
       </div>
 
-      {/* Stats — one hero stat + three quieter ones, instead of four equal boxes */}
       <div className="mx-3 mt-3 flex gap-3">
         <div className="flex-1 rounded-xl p-4 neo-card flex flex-col justify-between bg-[var(--accent2)]">
           <FiMessageSquare size={18} style={{ color: "var(--accent-ink)" }} />
@@ -220,7 +213,6 @@ export default function RoomInfoView({ roomId }: Props) {
         </div>
       </div>
 
-      {/* Kelola room — grouped list instead of two floating buttons */}
       <div className="m-3 mt-4">
         <p className="text-xs font-semibold text-[var(--text3)] uppercase tracking-wide mb-2 px-1">
           Kelola Room
@@ -249,7 +241,6 @@ export default function RoomInfoView({ roomId }: Props) {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium" style={{ color: "var(--coral)" }}>Hapus Room</p>
-              <p className="text-[11px] text-[var(--text3)] mt-0.5">Tidak bisa dibatalkan</p>
             </div>
           </button>
         </div>

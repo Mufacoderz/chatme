@@ -3,7 +3,7 @@
 import { signIn } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
-import { FiArrowRight, FiCheckCircle, FiClock, FiLock } from "react-icons/fi"
+import { FiArrowRight, FiCheckCircle, FiClock } from "react-icons/fi"
 
 export default function LoginPage() {
   return (
@@ -30,7 +30,7 @@ export default function LoginPage() {
             />
             <div>
               <p className="font-sora text-lg font-bold leading-none">Chatme</p>
-              <p className="mt-1 text-xs text-[var(--text2)]">Workspace pribadi</p>
+              <p className="mt-1 text-xs text-[var(--text2)]">Ruang chat pribadi</p>
             </div>
           </div>
 
@@ -38,14 +38,14 @@ export default function LoginPage() {
             <div className="w-full">
               <div className="neo-card mb-5 inline-flex items-center gap-2 rounded-lg bg-[var(--paper)] px-3 py-1.5 text-xs font-bold text-[var(--text)]">
                 <FiClock size={13} />
-                <span>Reminder hari ini</span>
+                <span>Pengingat hari ini</span>
               </div>
 
               <h1 className="max-w-lg font-sora text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
                 Chatme
               </h1>
               <p className="mt-4 max-w-md text-base leading-7 text-[var(--text2)] sm:text-lg">
-                Catatan, obrolan, dan pengingat dalam satu ruang yang tenang.
+                Chat pribadimu buat nyimpan catatan dan pengingat.
               </p>
 
               <div className="neo-panel mt-8 w-full max-w-md -rotate-1 rounded-2xl bg-[var(--surface)] p-3">
@@ -54,17 +54,17 @@ export default function LoginPage() {
                     C
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">Inbox</p>
-                    <p className="text-xs text-[var(--text3)]">3 catatan aktif</p>
+                    <p className="truncate text-sm font-semibold">Tugas Kuliah</p>
+                    <p className="text-xs text-[var(--text3)]">3 pengingat aktif • 19 Catatan</p>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 pt-4">
                   <div className="neo-card ml-auto max-w-[78%] rotate-1 rounded-xl rounded-br-sm bg-[var(--accent)] px-4 py-2.5 text-sm leading-relaxed text-[var(--accent-ink)]">
-                    Review konsep dashboard jam 4 sore
+                    Kerjakan tugas uas matematika
                   </div>
                   <div className="neo-card mr-auto max-w-[82%] -rotate-1 rounded-xl rounded-bl-sm bg-[var(--surface2)] px-4 py-2.5 text-sm leading-relaxed">
-                    Jangan lupa: Review konsep dashboard
+                    Jangan lupa: Kerjakan tugas uas matematika
                   </div>
                   <div className="neo-card flex items-center justify-between rounded-xl bg-[var(--bg)] px-3 py-2">
                     <div className="flex min-w-0 items-center gap-2">
@@ -78,10 +78,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="relative z-10 hidden items-center gap-2 text-xs text-[var(--text3)] sm:flex">
-            <FiLock size={13} />
-            <span>Akses akun dilindungi Google OAuth</span>
-          </div>
+  
         </section>
 
         <section className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
@@ -119,7 +116,7 @@ export default function LoginPage() {
                   <p className="mt-1 text-[11px] text-[var(--text3)]">cepat</p>
                 </div>
                 <div className="neo-card rounded-xl bg-[var(--bg)] px-3 py-3">
-                  <p className="font-sora text-sm font-bold text-[var(--accent)]">Todo</p>
+                  <p className="font-sora text-sm font-bold text-[var(--accent)]">Ceklis</p>
                   <p className="mt-1 text-[11px] text-[var(--text3)]">rapi</p>
                 </div>
                 <div className="neo-card rounded-xl bg-[var(--bg)] px-3 py-3">

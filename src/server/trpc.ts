@@ -18,6 +18,7 @@ const t = initTRPC.context<Context>().create({
 export const router = t.router
 export const publicProcedure = t.procedure
 
+//wajib login
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.session?.user?.id) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
@@ -31,6 +32,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   })
 })
 
+//wajib login + rate limit
 export const rateLimitedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   const { success } = await writeRatelimit.limit(ctx.userId)
   if (!success) {
@@ -42,6 +44,7 @@ export const rateLimitedProcedure = protectedProcedure.use(async ({ ctx, next })
   return next()
 })
 
+//wajib login + rate limit ketat
 export const strictRateLimitedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   const { success } = await strictRatelimit.limit(ctx.userId)
   if (!success) {

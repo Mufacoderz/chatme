@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 
+//ambil daftar room utk sidebar (preview pesan terakhir + jumlah pending)
 export async function getRoomsForUser(prisma: PrismaClient, userId: string) {
   const rawRooms = await prisma.room.findMany({
     where: { userId },

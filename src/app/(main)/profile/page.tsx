@@ -4,7 +4,6 @@ import {
   FiArrowLeft,
   FiCalendar,
   FiMail,
-  FiShield,
   FiLogOut,
   FiGrid,
   FiMessageSquare,
@@ -91,7 +90,6 @@ export default async function ProfilePage() {
         </div>
 
         <div className="flex flex-col gap-6">
-          {/* Akun */}
           <section>
             <SectionLabel>Akun</SectionLabel>
             <div className="neo-panel rounded-2xl bg-[var(--surface)] p-5 sm:p-7">
@@ -101,12 +99,6 @@ export default async function ProfilePage() {
 
               <div className="divide-y divide-dashed divide-[var(--neo-line)] overflow-hidden rounded-xl border-2 border-[var(--neo-line)] bg-[var(--surface2)]">
                 <InfoRow icon={<FiMail size={16} />} iconBgClass="bg-[var(--sage)]" label="Email" value={email} />
-                <InfoRow
-                  icon={<FiShield size={16} />}
-                  iconBgClass="bg-[var(--coral)]"
-                  label="Login Provider"
-                  value="Google OAuth"
-                />
                 <InfoRow
                   icon={<FiCalendar size={16} />}
                   iconBgClass="bg-[var(--accent)]"
@@ -118,7 +110,6 @@ export default async function ProfilePage() {
             </div>
           </section>
 
-          {/* Aktivitas */}
           <section>
             <SectionLabel>Aktivitas</SectionLabel>
             <div className="grid grid-cols-3 gap-3">
@@ -140,13 +131,11 @@ export default async function ProfilePage() {
             </div>
           </section>
 
-          {/* Preferensi */}
           <section>
             <SectionLabel>Preferensi</SectionLabel>
             <EnablePushButton />
           </section>
 
-          {/* Sesi */}
           <section>
             <SectionLabel>Sesi</SectionLabel>
             <form
@@ -165,7 +154,6 @@ export default async function ProfilePage() {
             </form>
           </section>
 
-          {/* Danger Zone */}
           <section>
             <DangerZone />
           </section>
