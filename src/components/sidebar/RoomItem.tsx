@@ -3,9 +3,12 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { trpc } from "@/lib/trpc"
 import { getRoomIconSrc } from "@/lib/roomIcons"
+import RoomItemMenu from "./RoomItemMenu"
+import EditRoomModal from "@/components/chat/modals/EditRoomModal"
+import DeleteRoomModal from "@/components/chat/modals/DeleteRoomModal"
 
 type Props = {
   id: string
@@ -44,6 +47,36 @@ export default function RoomItem({
   const utils = trpc.useUtils()
   const linkRef = useRef<HTMLAnchorElement>(null)
   const hasPrefetched = useRef(false)
+  const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const suppressNextClick = useRef(false)
+
+  function openMenu(x: number, y: number) {
+    setMenuPos({ x, y })
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const touch = e.touches[0]
+    touchTimer.current = setTimeout(() => {
+      suppressNextClick.current = true
+      openMenu(touch.clientX, touch.clientY)
+    }, 500)
+  }
+
+  function handleTouchEnd() {
+    if (touchTimer.current) {
+      clearTimeout(touchTimer.current)
+      touchTimer.current = null
+    }
+  }
+
+  function handleContextMenu(e: React.MouseEvent) {
+    e.preventDefault()
+    suppressNextClick.current = true
+    openMenu(e.clientX, e.clientY)
+  }
 
   const prefetchRoom = useCallback(() => {
     if (hasPrefetched.current) return
@@ -99,6 +132,16 @@ export default function RoomItem({
       onMouseLeave={(e) => {
         if (!isActive) e.currentTarget.style.background = "var(--surface)"
       }}
+      onClick={(e) => {
+        if (suppressNextClick.current) {
+          e.preventDefault()
+          suppressNextClick.current = false
+        }
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchEnd}
+      onContextMenu={handleContextMenu}
     >
       {isActive && (
         <div className="absolute -left-2 top-3 h-5 w-5 rotate-12 rounded-md border-2 border-[var(--neo-line)] bg-[var(--bg)]" />
@@ -149,6 +192,23 @@ export default function RoomItem({
         >
           {pendingCount}
         </div>
+      )}
+
+      {menuPos && (
+        <RoomItemMenu
+          x={menuPos.x}
+          y={menuPos.y}
+          onInfo={() => router.push(`/room/${id}/info`)}
+          onEdit={() => setShowEdit(true)}
+          onDelete={() => setShowDelete(true)}
+          onClose={() => setMenuPos(null)}
+        />
+      )}
+      {showEdit && (
+        <EditRoomModal roomId={id} initialName={name} initialIcon={icon} initialDescription={description} onClose={() => setShowEdit(false)} />
+      )}
+      {showDelete && (
+        <DeleteRoomModal roomId={id} roomName={name} onClose={() => setShowDelete(false)} />
       )}
     </Link>
   )
