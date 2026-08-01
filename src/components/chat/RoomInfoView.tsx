@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc"
 import { useRoomInfo } from "@/hooks/useRoom"
 import { useRoomPinnedMessages, useRoomActiveReminders, useMarkRemindedAndDone } from "@/hooks/useMessages"
 import { getRoomIconSrc } from "@/lib/roomIcons"
+import { SkeletonBlock } from "@/components/ui/Skeleton"
 import EditRoomModal from "./modals/EditRoomModal"
 import DeleteRoomModal from "./modals/DeleteRoomModal"
 import PinnedMessagesModal from "./modals/PinnedMessagesModal"
@@ -27,6 +28,7 @@ export default function RoomInfoView({ roomId }: Props) {
   const [showDelete, setShowDelete] = useState(false)
   const [showPinned, setShowPinned] = useState(false)
   const [showReminders, setShowReminders] = useState(false)
+  const [now] = useState(() => Date.now())
 
   const pinnedQuery = useRoomPinnedMessages(roomId, showPinned)
   const remindersQuery = useRoomActiveReminders(roomId, showReminders)
@@ -50,8 +52,48 @@ export default function RoomInfoView({ roomId }: Props) {
 
   if (isLoading || !info) {
     return (
-      <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="flex items-center justify-center">
-        <p className="text-sm text-[var(--text3)]">Memuat info room...</p>
+      <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="pb-10">
+        {/* Header */}
+        <div className="m-3 mb-0 flex items-center gap-3 rounded-xl bg-[var(--surface)] px-3 py-3 neo-panel">
+          <SkeletonBlock className="h-8 w-8 rounded-lg" />
+          <SkeletonBlock className="h-4 w-24 rounded-full" />
+        </div>
+
+        {/* Hero */}
+        <div className="relative m-3 mt-4 rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
+          <div className="absolute left-0 top-0 h-full w-2 bg-[var(--surface3)]" />
+          <div className="flex items-start gap-4 pl-7 pr-5 py-5">
+            <SkeletonBlock className="shrink-0 h-20 w-20 rounded-xl" />
+            <div className="min-w-0 flex-1 pt-1">
+              <SkeletonBlock className="mb-2 h-5 w-40 rounded-full" />
+              <SkeletonBlock className="mb-3 h-3 w-56 rounded-full" />
+              <SkeletonBlock className="h-3 w-28 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="mx-3 mt-3 flex gap-3">
+          <SkeletonBlock className="flex-1 rounded-xl" />
+          <div className="flex flex-1 flex-col gap-3">
+            <SkeletonBlock className="h-16 rounded-xl" />
+            <SkeletonBlock className="h-16 rounded-xl" />
+            <SkeletonBlock className="h-16 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Kelola Room */}
+        <div className="m-3 mt-4">
+          <SkeletonBlock className="mb-2 h-3 w-24 rounded-full" />
+          <div className="rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <SkeletonBlock className="h-8 w-8 shrink-0 rounded-lg" />
+                <SkeletonBlock className="h-3 w-28 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -62,7 +104,7 @@ export default function RoomInfoView({ roomId }: Props) {
 
   const hariAktif = Math.max(
     0,
-    Math.floor((Date.now() - new Date(info.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+    Math.floor((now - new Date(info.createdAt).getTime()) / (1000 * 60 * 60 * 24))
   )
 
   const checklistTotal = info.checklist.total
