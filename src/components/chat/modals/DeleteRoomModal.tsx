@@ -29,49 +29,53 @@ export default function DeleteRoomModal({ roomId, roomName, onClose }: Props) {
   return (
     <ModalPortal>
       <div
-        className="fixed inset-0 z-50 flex items-end justify-center"
-        style={{ background: "#00000070", backdropFilter: "blur(4px)" }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        className="fixed inset-0 z-50 flex items-end justify-center bg-[#10201999] p-3 sm:items-center"
+        onClick={(event) => event.target === event.currentTarget && onClose()}
       >
-      <div className="w-full max-w-md rounded-t-3xl p-6 pb-10 bg-[var(--surface)] border-t border-[var(--border2)]">
-        <div className="w-9 h-1 rounded-full mx-auto mb-5 bg-[var(--border2)]" />
-
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <FiAlertTriangle size={16} className="text-red-400" />
-            <p className="font-semibold font-sora text-base text-[var(--text)]">Hapus Room</p>
+        <div className="neo-panel w-full max-w-sm rounded-2xl bg-[var(--surface)] p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FiAlertTriangle size={17} className="text-[var(--coral)]" />
+              <h2 className="font-sora text-base font-bold text-[var(--text)]">
+                Hapus Room
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="neo-button flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface2)]"
+              aria-label="Tutup"
+            >
+              <FiX size={16} />
+            </button>
           </div>
-          <button onClick={onClose} className="text-[var(--text3)]">
-            <FiX size={20} />
-          </button>
-        </div>
 
-        <p className="text-sm text-[var(--text2)] mb-2 leading-relaxed">
-          Yakin mau hapus room <span className="font-semibold text-[var(--text)]">{roomName}</span>?
-        </p>
-        <p className="text-xs text-[var(--text3)] mb-6">
-          Semua catatan di dalam room ini akan ikut terhapus dan tidak bisa dikembalikan.
-        </p>
+          <p className="text-sm leading-6 text-[var(--text2)]">
+            Yakin mau hapus room <span className="font-semibold text-[var(--text)]">{roomName}</span>?
+          </p>
+          <p className="mt-1 text-xs text-[var(--text3)]">
+            Semua catatan di dalam room ini akan ikut terhapus dan tidak bisa dikembalikan.
+          </p>
 
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl text-sm font-semibold font-sora border transition-colors"
-            style={{ borderColor: "var(--border2)", color: "var(--text)" }}
-          >
-            Batal
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={loading}
-            className="flex-1 py-3 rounded-xl text-sm font-semibold font-sora transition-opacity"
-            style={{ background: "#ef4444", color: "white", opacity: loading ? 0.5 : 1 }}
-          >
-            {loading ? "Menghapus..." : "Hapus"}
-          </button>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="neo-button flex-1 rounded-xl bg-[var(--surface2)] py-3 text-sm font-bold"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={loading}
+              className="neo-button flex-1 rounded-xl bg-[var(--coral)] py-3 text-sm font-bold text-[var(--text)] disabled:opacity-50"
+            >
+              {loading ? "Menghapus..." : "Hapus"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     </ModalPortal>
   )
 }
