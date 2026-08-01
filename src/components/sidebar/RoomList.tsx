@@ -5,6 +5,7 @@ type Room = {
   id: string
   name: string
   icon: string
+  description: string | null
   _count: { messages: number }
   messages: { text: string; createdAt: Date }[]
 }
@@ -26,6 +27,7 @@ export default function RoomList({ rooms }: Props) {
           id={room.id}
           name={room.name}
           icon={room.icon}
+          description={room.description}
           pendingCount={room._count.messages}
           lastMessage={room.messages[0] ?? null}
           eagerPrefetch={index < EAGER_PREFETCH_COUNT}

@@ -11,6 +11,7 @@ type Props = {
   id: string
   name: string
   icon: string
+  description: string | null
   pendingCount: number
   lastMessage: { text: string; createdAt: Date } | null
   eagerPrefetch?: boolean
@@ -32,6 +33,7 @@ export default function RoomItem({
   id,
   name,
   icon,
+  description,
   pendingCount,
   lastMessage,
   eagerPrefetch = false,
