@@ -11,7 +11,7 @@ export default function OfflinePage() {
       <div>
         <p className="text-lg font-semibold text-[var(--text)]">Kamu lagi offline</p>
         <p className="mt-1 max-w-[240px] text-sm text-[var(--text2)]">
-          Room yang udah pernah dibuka tetap bisa diakses. Halaman ini belum sempat ke-simpen.
+          Room yang udah pernah dibuka tetap bisa diakses. Halaman ini belum sempat ke-simpan.
         </p>
       </div>
       <button

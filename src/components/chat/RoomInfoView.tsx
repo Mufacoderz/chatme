@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import {
   FiArrowLeft, FiEdit2, FiTrash2, FiBookmark, FiBell,
-  FiCheckSquare, FiCalendar, FiMessageSquare,
+  FiCheckSquare, FiCalendar, FiMessageSquare, FiChevronRight,
 } from "react-icons/fi"
 import { trpc } from "@/lib/trpc"
 import { useRoomInfo } from "@/hooks/useRoom"
@@ -60,8 +60,18 @@ export default function RoomInfoView({ roomId }: Props) {
     day: "numeric", month: "long", year: "numeric",
   })
 
+  const hariAktif = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(info.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+  )
+
+  const checklistTotal = info.checklist.total
+  const checklistPercent = checklistTotal > 0
+    ? Math.round((info.checklist.selesai / checklistTotal) * 100)
+    : null
+
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="pb-8">
+    <div style={{ background: "var(--bg)", minHeight: "100dvh" }} className="pb-10">
       {/* Header */}
       <div className="m-3 mb-0 flex items-center gap-3 rounded-xl bg-[var(--surface)] px-3 py-3 neo-panel">
         <button
@@ -73,65 +83,134 @@ export default function RoomInfoView({ roomId }: Props) {
         <p className="font-semibold font-sora text-base text-[var(--text)]">Info Room</p>
       </div>
 
-      {/* Hero */}
-      <div className="m-3 flex flex-col items-center rounded-xl bg-[var(--surface)] px-6 py-8 neo-panel">
-        <div className="neo-button w-24 h-24 rounded-2xl flex items-center justify-center bg-[var(--surface2)] overflow-hidden mb-4">
-          <Image src={getRoomIconSrc(info.icon)} alt={info.icon} width={96} height={96} className="object-contain" />
-        </div>
-        <p className="font-bold font-sora text-lg text-[var(--text)] text-center">{info.name}</p>
-        {info.description && (
-          <p className="text-sm text-[var(--text3)] text-center mt-1.5 max-w-xs">{info.description}</p>
-        )}
-        <div className="flex items-center gap-1.5 mt-4 text-xs text-[var(--text3)]">
-          <FiCalendar size={13} />
-          <span>Dibuat {tanggalDibuat}</span>
-        </div>
-      </div>
-
-      {/* Stats grid */}
-      <div className="mx-3 grid grid-cols-2 gap-3">
-        <div className="neo-card rounded-xl p-4 bg-[var(--surface)]">
-          <FiMessageSquare size={16} className="text-[var(--accent)] mb-2" />
-          <p className="text-xl font-bold font-sora text-[var(--text)]">{info.totalPesan}</p>
-          <p className="text-xs text-[var(--text3)]">Total Catatan</p>
-        </div>
-
-        <button onClick={() => setShowPinned(true)} className="neo-card rounded-xl p-4 bg-[var(--surface)] text-left">
-          <FiBookmark size={16} className="text-[var(--accent)] mb-2" />
-          <p className="text-xl font-bold font-sora text-[var(--text)]">{info.pesanDipin}</p>
-          <p className="text-xs text-[var(--text3)]">Catatan Dipin</p>
-        </button>
-
-        <button onClick={() => setShowReminders(true)} className="neo-card rounded-xl p-4 bg-[var(--surface)] text-left">
-          <FiBell size={16} className="text-[var(--accent)] mb-2" />
-          <p className="text-xl font-bold font-sora text-[var(--text)]">{info.reminderAktif}</p>
-          <p className="text-xs text-[var(--text3)]">Reminder Aktif</p>
-        </button>
-
-        <div className="neo-card rounded-xl p-4 bg-[var(--surface)]">
-          <FiCheckSquare size={16} className="text-[var(--accent)] mb-2" />
-          <p className="text-xl font-bold font-sora text-[var(--text)]">
-            {info.checklist.selesai}/{info.checklist.total}
-          </p>
-          <p className="text-xs text-[var(--text3)]">Checklist Selesai</p>
+      {/* Hero — ID card layout, not the usual centered avatar block */}
+      <div className="relative m-3 mt-4 rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
+        <div className="absolute left-0 top-0 h-full w-2 bg-[var(--accent)]" />
+        <div className="flex items-start gap-4 pl-7 pr-5 py-5">
+          <div className="neo-button shrink-0 w-20 h-20 rounded-xl flex items-center justify-center bg-[var(--surface2)] overflow-hidden -rotate-2">
+            <Image src={getRoomIconSrc(info.icon)} alt={info.icon} width={80} height={80} className="object-contain" />
+          </div>
+          <div className="min-w-0 pt-1">
+            <p className="font-bold font-sora text-lg text-[var(--text)] leading-tight break-words">
+              {info.name}
+            </p>
+            {info.description && (
+              <p className="text-sm text-[var(--text3)] italic mt-1 break-words">
+                {info.description}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3 text-xs text-[var(--text3)]">
+              <span className="flex items-center gap-1.5">
+                <FiCalendar size={12} />
+                {tanggalDibuat}
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[var(--border2)] px-2 py-0.5 font-medium text-[var(--accent3)] bg-[var(--accent-dim)]">
+                {hariAktif === 0 ? "Baru dibuat" : `Aktif ${hariAktif} hari`}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Kelola room */}
-      <div className="m-3 flex flex-col gap-3">
-        <button
-          onClick={() => setShowEdit(true)}
-          className="neo-button flex items-center gap-3 rounded-xl px-4 py-3 bg-[var(--surface)] text-[var(--text)] text-sm font-medium"
-        >
-          <FiEdit2 size={16} /> Edit Room
-        </button>
-        <button
-          onClick={() => setShowDelete(true)}
-          className="neo-button flex items-center gap-3 rounded-xl px-4 py-3 bg-[var(--surface)] text-sm font-medium"
-          style={{ color: "#fca5a5" }}
-        >
-          <FiTrash2 size={16} /> Hapus Room
-        </button>
+      {/* Stats — one hero stat + three quieter ones, instead of four equal boxes */}
+      <div className="mx-3 mt-3 flex gap-3">
+        <div className="flex-1 rounded-xl p-4 neo-card flex flex-col justify-between bg-[var(--accent2)]">
+          <FiMessageSquare size={18} style={{ color: "var(--accent-ink)" }} />
+          <div>
+            <p className="text-4xl font-bold font-sora leading-none" style={{ color: "var(--accent-ink)" }}>
+              {info.totalPesan}
+            </p>
+            <p className="text-xs mt-2" style={{ color: "var(--accent-ink)", opacity: 0.75 }}>
+              Total Catatan
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-3">
+          <button
+            onClick={() => setShowPinned(true)}
+            className="neo-card rounded-xl p-3 bg-[var(--surface)] text-left flex items-center gap-3"
+          >
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--accent-dim)" }}>
+              <FiBookmark size={15} className="text-[var(--accent2)]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg font-bold font-sora text-[var(--text)] leading-none">{info.pesanDipin}</p>
+              <p className="text-[11px] text-[var(--text3)] mt-1">Dipin</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setShowReminders(true)}
+            className="neo-card rounded-xl p-3 bg-[var(--surface)] text-left flex items-center gap-3"
+          >
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(232,117,91,0.15)" }}>
+              <FiBell size={15} style={{ color: "var(--coral)" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg font-bold font-sora text-[var(--text)] leading-none">{info.reminderAktif}</p>
+              <p className="text-[11px] text-[var(--text3)] mt-1">Reminder Aktif</p>
+            </div>
+          </button>
+
+          <div className="neo-card rounded-xl p-3 bg-[var(--surface)] flex flex-col justify-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <FiCheckSquare size={14} style={{ color: "var(--success)" }} />
+              <p className="text-xs text-[var(--text3)]">Checklist</p>
+            </div>
+            {checklistPercent === null ? (
+              <p className="text-xs text-[var(--text3)]">Belum ada checklist</p>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-lg font-bold font-sora text-[var(--text)] leading-none">{checklistPercent}%</p>
+                  <p className="text-[11px] text-[var(--text3)]">{info.checklist.selesai}/{checklistTotal}</p>
+                </div>
+                <div className="h-1.5 rounded-full bg-[var(--surface3)] overflow-hidden mt-0.5">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${checklistPercent}%`, background: "var(--success)" }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Kelola room — grouped list instead of two floating buttons */}
+      <div className="m-3 mt-4">
+        <p className="text-xs font-semibold text-[var(--text3)] uppercase tracking-wide mb-2 px-1">
+          Kelola Room
+        </p>
+        <div className="rounded-xl bg-[var(--surface)] neo-panel overflow-hidden">
+          <button
+            onClick={() => setShowEdit(true)}
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--accent-dim)" }}>
+              <FiEdit2 size={14} className="text-[var(--accent2)]" />
+            </div>
+            <p className="flex-1 text-sm font-medium text-[var(--text)]">Edit Room</p>
+            <FiChevronRight size={16} className="text-[var(--text3)]" />
+          </button>
+
+          <div className="border-t border-dashed" style={{ borderColor: "var(--border)" }} />
+
+          <button
+            onClick={() => setShowDelete(true)}
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+            style={{ background: "rgba(232,117,91,0.08)" }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(232,117,91,0.18)" }}>
+              <FiTrash2 size={14} style={{ color: "var(--coral)" }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium" style={{ color: "var(--coral)" }}>Hapus Room</p>
+              <p className="text-[11px] text-[var(--text3)] mt-0.5">Tidak bisa dibatalkan</p>
+            </div>
+          </button>
+        </div>
       </div>
 
       {showEdit && (
