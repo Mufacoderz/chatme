@@ -4,7 +4,7 @@
 
 "use client"
 
-import { useRef } from "react"
+import { useState } from "react"
 import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2 } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
@@ -34,11 +34,11 @@ export default function ContextMenu({
   // Ghost click dari touch (synthetic click yang dikirim browser setelah
   // touchend) bisa nimpa backdrop sesaat setelah modal mount — klik di bawah
   // jendela ini diabaikan.
-  const openedAt = useRef(Date.now())
+  const [openedAt] = useState(() => Date.now())
   const GHOST_CLICK_GUARD_MS = 350
 
   function handleBackdropClick() {
-    if (Date.now() - openedAt.current < GHOST_CLICK_GUARD_MS) return
+    if (Date.now() - openedAt < GHOST_CLICK_GUARD_MS) return
     onClose()
   }
 

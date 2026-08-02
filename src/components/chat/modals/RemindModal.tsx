@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { FiBell, FiX } from "react-icons/fi"
 import { trpc } from "@/lib/trpc"
 import { ModalPortal } from "@/components/ui/ModalPortal"
@@ -18,11 +18,11 @@ export default function RemindModal({ messageId, messageText, onClose, onSave }:
   const [loading, setLoading] = useState(false)
 
   // Ghost click dari touch bisa nimpa backdrop sesaat setelah modal mount.
-  const openedAt = useRef(Date.now())
+  const [openedAt] = useState(() => Date.now())
   const GHOST_CLICK_GUARD_MS = 350
 
   function handleBackdropClick(e: React.MouseEvent) {
-    if (Date.now() - openedAt.current < GHOST_CLICK_GUARD_MS) return
+    if (Date.now() - openedAt < GHOST_CLICK_GUARD_MS) return
     if (e.target !== e.currentTarget) return
     onClose()
   }
