@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 
   await prisma.message.createMany({
     data: pendingReminders.map((r) => ({
-      text: "",
+      text: r.text,
       isBot: true,
       sourceMessageId: r.id,
       roomId: r.roomId,

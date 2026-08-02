@@ -35,7 +35,7 @@ const BotBubble = memo(function BotBubble({
     minute: "2-digit",
   })
 
-  const reminderText = sourceMessage?.text ?? "Tidak ada teks pengingat"
+  const reminderText = message.text || sourceMessage?.text || "Tidak ada teks pengingat"
   const cardId = `bot-card-${message.id}`
 
   // Efek shake hanya jalan kalau card masih ditampilkan
