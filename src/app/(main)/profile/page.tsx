@@ -8,6 +8,7 @@ import {
   FiGrid,
   FiMessageSquare,
   FiBell,
+  FiMessageCircle,
 } from "react-icons/fi"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
@@ -71,6 +72,10 @@ export default async function ProfilePage() {
   const email = session.user.email || "email belum tersedia"
   const initial = name.charAt(0).toUpperCase()
   const joinedLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(dbUser.createdAt)
+
+  const ADMIN_WA_NUMBER = "628123456789" // dummy — ganti ke nomor WA admin asli
+  const waMessage = `Halo Admin Chatme, saya ${name} (${email}).\n\nSaya mau: `
+  const waHref = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(waMessage)}`
 
   return (
     <main className="min-h-full flex-1 overflow-y-auto bg-[var(--bg)] p-3 sm:p-6">
@@ -152,6 +157,19 @@ export default async function ProfilePage() {
                 Logout
               </button>
             </form>
+          </section>
+
+          <section>
+            <SectionLabel>Bantuan</SectionLabel>
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="neo-button flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--surface2)] px-4 py-3 text-sm font-bold text-[var(--text)]"
+            >
+              <FiMessageCircle size={16} />
+              Hubungi Admin
+            </a>
           </section>
 
           <section>
