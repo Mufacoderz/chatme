@@ -133,6 +133,7 @@ export const messageRouter = router({
         data.editedAt = new Date()
       }
       if (typeof data.remindSnoozeAt === "string") data.remindSnoozeAt = new Date(data.remindSnoozeAt as string)
+      if ("remindSnoozeAt" in data) data.remindNotifiedAt = null
 
       const owned = await ctx.prisma.message.findFirst({
         where: { id, userId: ctx.userId },
@@ -184,6 +185,7 @@ export const messageRouter = router({
         data: {
           remindAt: input.remindAt ? new Date(input.remindAt) : null,
           isRemindDone: false,
+          remindNotifiedAt: null,
         },
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })

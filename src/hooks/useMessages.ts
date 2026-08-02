@@ -209,6 +209,7 @@ export function useSendMessage(roomId: string) {
         isBot: false,
         remindAt: null,
         remindSnoozeAt: null,
+        remindNotifiedAt: null,
         isRemindDone: false,
         sourceMessageId: null,
         roomId: input.roomId,

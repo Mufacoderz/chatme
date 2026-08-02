@@ -2,42 +2,64 @@ import { prisma } from "@/lib/prisma"
 import { sendPushToUser } from "@/lib/webPush"
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs"
 
+// Notif diulang tiap interval ini selama reminder belum ditandai selesai.
+const REPEAT_INTERVAL_MS = (Number(process.env.REMINDER_REPEAT_MINUTES) || 10) * 60 * 1000
+
 async function handler() {
-  const pendingReminders = await prisma.message.findMany({
+  const now = new Date()
+
+  // Bubble sistem (chat + card) dibuat cukup sekali — kunci via `reminders: { none: {} }`.
+  const newDue = await prisma.message.findMany({
     where: {
       isBot: false,
       isRemindDone: false,
-      remindAt: { lte: new Date() },
+      remindAt: { lte: now },
       reminders: { none: {} },
     },
     select: { id: true, text: true, userId: true, roomId: true },
   })
 
-  if (pendingReminders.length === 0) {
-    return Response.json({ processed: 0 })
+  if (newDue.length > 0) {
+    await prisma.message.createMany({
+      data: newDue.map((r) => ({
+        text: r.text,
+        isBot: true,
+        sourceMessageId: r.id,
+        roomId: r.roomId,
+        userId: r.userId,
+      })),
+      skipDuplicates: true,
+    })
   }
 
-  await prisma.message.createMany({
-    data: pendingReminders.map((r) => ({
-      text: r.text,
-      isBot: true,
-      sourceMessageId: r.id,
-      roomId: r.roomId,
-      userId: r.userId,
-    })),
-    skipDuplicates: true,
+  // Push diulang tiap interval selama belum ditandai selesai.
+  const dueForPush = await prisma.message.findMany({
+    where: {
+      isBot: false,
+      isRemindDone: false,
+      remindAt: { lte: now },
+      OR: [
+        { remindNotifiedAt: null },
+        { remindNotifiedAt: { lte: new Date(now.getTime() - REPEAT_INTERVAL_MS) } },
+      ],
+    },
+    select: { id: true, text: true, userId: true, roomId: true },
   })
 
-  for (const reminder of pendingReminders) {
+  for (const reminder of dueForPush) {
     await sendPushToUser(prisma, reminder.userId, {
       title: "Pengingat Chatme",
       body: reminder.text || "Ada pengingat yang perlu kamu cek.",
       url: `/room/${reminder.roomId}`,
       tag: `chatme-reminder-${reminder.id}`,
     })
+    await prisma.message.update({
+      where: { id: reminder.id },
+      data: { remindNotifiedAt: now },
+    })
   }
 
-  return Response.json({ processed: pendingReminders.length })
+  return Response.json({ processed: dueForPush.length, bubbles: newDue.length })
 }
 
 // GET manual/testing tetap pakai CRON_SECRET. POST dari QStash schedule
