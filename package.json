@@ -29,7 +29,7 @@
     "autoprefixer": "^10.5.0",
     "framer-motion": "^12.38.0",
     "idb-keyval": "^6.2.5",
-    "next": "16.2.4",
+    "next": "^16.2.12",
     "next-auth": "^5.0.0-beta.31",
     "postcss": "^8.5.10",
     "prisma": "^6.19.3",
@@ -47,7 +47,7 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "^16.2.12",
     "serwist": "^9.5.11",
     "typescript": "^5"
   }
