@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { FiEdit2, FiX } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
@@ -14,6 +14,16 @@ export default function EditMessageModal({ initialText, onSave, onClose }: Props
   const [text, setText] = useState(initialText)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Ghost click dari touch bisa nimpa backdrop sesaat setelah modal mount.
+  const openedAt = useRef(Date.now())
+  const GHOST_CLICK_GUARD_MS = 350
+
+  function handleBackdropClick(e: React.MouseEvent) {
+    if (Date.now() - openedAt.current < GHOST_CLICK_GUARD_MS) return
+    if (e.target !== e.currentTarget) return
+    onClose()
+  }
 
   async function handleSave() {
     const trimmed = text.trim()
@@ -34,7 +44,7 @@ export default function EditMessageModal({ initialText, onSave, onClose }: Props
     <ModalPortal>
       <div
         className="fixed inset-0 z-50 flex items-end justify-center bg-[#10201999] p-3 sm:items-center"
-        onClick={(event) => event.target === event.currentTarget && onClose()}
+        onClick={handleBackdropClick}
       >
       <div className="neo-panel w-full max-w-md rounded-2xl bg-[var(--surface)] p-5">
         <div className="mb-4 flex items-center justify-between">

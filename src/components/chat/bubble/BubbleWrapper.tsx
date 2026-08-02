@@ -32,6 +32,8 @@ const BubbleWrapper = memo(function BubbleWrapper({
   const [showDelete, setShowDelete] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null)
+  const MOVE_THRESHOLD = 10 // px
 
   const { editMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle } = useMessageActions()
 
@@ -42,11 +44,22 @@ const BubbleWrapper = memo(function BubbleWrapper({
 
   function handleTouchStart(e: React.TouchEvent) {
     const touch = e.touches[0]
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY }
     touchTimer.current = setTimeout(() => openMenu(touch.clientX, touch.clientY), 500)
+  }
+
+  // Jari yang gemeter dikit (di bawah threshold) gak boleh batalin long-press.
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!touchStartPos.current) return
+    const touch = e.touches[0]
+    const dx = touch.clientX - touchStartPos.current.x
+    const dy = touch.clientY - touchStartPos.current.y
+    if (Math.sqrt(dx * dx + dy * dy) > MOVE_THRESHOLD) handleTouchEnd()
   }
 
   function handleTouchEnd() {
     if (touchTimer.current) clearTimeout(touchTimer.current)
+    touchStartPos.current = null
   }
 
   function handleContextMenu(e: React.MouseEvent) {
@@ -104,7 +117,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
             onContextMenu={handleContextMenu}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            onTouchMove={handleTouchEnd}
+            onTouchMove={handleTouchMove}
           />
         ) : (
           <MessageBubble
@@ -114,7 +127,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
             onContextMenu={handleContextMenu}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            onTouchMove={handleTouchEnd}
+            onTouchMove={handleTouchMove}
           />
         )}
       </div>

@@ -4,6 +4,7 @@
 
 "use client"
 
+import { useRef } from "react"
 import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2 } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
@@ -29,6 +30,17 @@ export default function ContextMenu({
   x, y, isChecklist = false, isDone, isPinned, hasActiveReminder, canEditByTime,
   onCopy, onEdit, onToggleDone, onRemind, onMarkReminded, onTogglePin, onDelete, onClose
 }: Props) {
+
+  // Ghost click dari touch (synthetic click yang dikirim browser setelah
+  // touchend) bisa nimpa backdrop sesaat setelah modal mount — klik di bawah
+  // jendela ini diabaikan.
+  const openedAt = useRef(Date.now())
+  const GHOST_CLICK_GUARD_MS = 350
+
+  function handleBackdropClick() {
+    if (Date.now() - openedAt.current < GHOST_CLICK_GUARD_MS) return
+    onClose()
+  }
 
   // pastiin menu tidak keluar dari viewport
   const safeY = Math.min(y, window.innerHeight - 280)
@@ -77,7 +89,7 @@ export default function ContextMenu({
     <ModalPortal>
       <div
         className="fixed inset-0 z-40"
-        onClick={onClose}
+        onClick={handleBackdropClick}
       >
         <div
           className="neo-panel fixed z-50 min-w-[200px] overflow-hidden rounded-xl bg-[var(--surface2)]"
