@@ -213,7 +213,7 @@ export const messageRouter = router({
       return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
     }),
 
-    //hapus smua catatan
+    //hapus smua catatan (note user, bot message dibiarkan)
   clearAll: protectedProcedure
   .input(z.object({ roomId: z.string() }))
   .mutation(async ({ ctx, input }) => {
@@ -224,7 +224,24 @@ export const messageRouter = router({
     if (!room) throw new TRPCError({ code: "NOT_FOUND" })
 
     await ctx.prisma.message.deleteMany({
-      where: { roomId: input.roomId },
+      where: { roomId: input.roomId, isBot: false },
+    })
+
+    return { success: true }
+  }),
+
+  //hapus smua bot message (riwayat pengingat), note user dibiarkan
+  clearBotMessages: protectedProcedure
+  .input(z.object({ roomId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const room = await ctx.prisma.room.findFirst({
+      where: { id: input.roomId, userId: ctx.userId },
+      select: { id: true },
+    })
+    if (!room) throw new TRPCError({ code: "NOT_FOUND" })
+
+    await ctx.prisma.message.deleteMany({
+      where: { roomId: input.roomId, isBot: true },
     })
 
     return { success: true }

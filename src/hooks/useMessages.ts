@@ -318,6 +318,21 @@ export function useClearMessages(roomId: string) {
   })
 }
 
+// ── Clear bot messages (riwayat pengingat) in room ─────────────────────
+
+export function useClearBotMessages(roomId: string) {
+  const queryClient = useQueryClient()
+  const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
+
+  return trpc.message.clearBotMessages.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messagesKey })
+      queryClient.invalidateQueries({ queryKey: roomsKey })
+    },
+  })
+}
+
 // ── Toggle done ─────────────────────────────────────────────────────────
 
 export function useToggleDone(roomId: string) {

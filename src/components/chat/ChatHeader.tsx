@@ -24,6 +24,7 @@ type Props = {
   messages: Message[]
   onReminderDone: (messageId: string) => void
   onClear: () => void
+  onClearBots: () => void
 
   searchQuery: string
   onSearch: (query: string) => void
@@ -39,6 +40,7 @@ export default function ChatHeader({
   messages,
   onReminderDone,
   onClear,
+  onClearBots,
   searchQuery,
   onSearch,
 }: Props) {
@@ -60,6 +62,7 @@ export default function ChatHeader({
   const [showPinned, setShowPinned] = useState(false)
   const [showReminders, setShowReminders] = useState(false)
   const [showClear, setShowClear] = useState(false)
+  const [showClearBots, setShowClearBots] = useState(false)
   const [showMobileSearch, setShowMobileSearch] = useState(false)
 
   function handleMenuOpen() {
@@ -173,6 +176,7 @@ export default function ChatHeader({
             onEdit={() => setShowEdit(true)}
             onPinned={() => setShowPinned(true)}
             onClear={() => setShowClear(true)}
+            onClearBots={() => setShowClearBots(true)}
             onDelete={() => setShowDelete(true)}
             onClose={() => setShowMenu(false)}
           />
@@ -231,8 +235,21 @@ export default function ChatHeader({
 
       {showClear && (
         <ClearMessagesModal
+          title="Bersihkan Catatan"
+          description="Semua catatan di room ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?"
+          confirmLabel="Bersihkan"
           onConfirm={onClear}
           onClose={() => setShowClear(false)}
+        />
+      )}
+
+      {showClearBots && (
+        <ClearMessagesModal
+          title="Bersihkan Riwayat Pengingat"
+          description="Semua bubble pengingat otomatis di room ini akan dihapus permanen. Catatan kamu tidak akan terpengaruh. Lanjutkan?"
+          confirmLabel="Bersihkan"
+          onConfirm={onClearBots}
+          onClose={() => setShowClearBots(false)}
         />
       )}
 

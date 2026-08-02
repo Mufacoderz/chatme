@@ -8,7 +8,7 @@ import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
 import UndoToast from "./UndoToast"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
-import { useMarkRemindedAndDone, useClearMessages } from "@/hooks/useMessages"
+import { useMarkRemindedAndDone, useClearMessages, useClearBotMessages } from "@/hooks/useMessages"
 import { MessageType } from "@prisma/client"
 import type { ChatMessage } from "@/types/chat"
 
@@ -26,6 +26,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const { toggleDone, markReminded, setReminder, removeFromView, restoreToView, commitDelete } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
   const clearMessages = useClearMessages(roomId)
+  const clearBotMessages = useClearBotMessages(roomId)
 
   const [snoozeBotId, setSnoozeBotId] = useState<string | null>(null)
   const [snoozeSourceId, setSnoozeSourceId] = useState<string | null>(null)
@@ -78,6 +79,10 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
 
   function handleClear() {
     clearMessages.mutate({ roomId })
+  }
+
+  function handleClearBots() {
+    clearBotMessages.mutate({ roomId })
   }
 
   // Klik hapus -> pesan langsung hilang dari chat (optimistic). Kalau
@@ -136,6 +141,7 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         messages={messages}
         onReminderDone={handleReminderDone}
         onClear={handleClear}
+        onClearBots={handleClearBots}
         searchQuery={searchQuery}
         onSearch={handleSearch}
       />
