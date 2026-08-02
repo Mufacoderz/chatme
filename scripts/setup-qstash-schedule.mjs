@@ -20,12 +20,16 @@ const cron = "*/5 * * * *"
 const client = new Client({ token: qstashToken, baseUrl: qstashUrl })
 
 try {
-  const result = await client.schedules.upsert({
-    schedule: "check-reminders",
-    destination,
-    cron,
-    retries: 3,
-  })
+  // Hapus schedule lama yang nunjuk ke destination yang sama biar nggak dobel.
+  const schedules = await client.schedules.list()
+  for (const s of schedules) {
+    if (s.destination === destination) {
+      await client.schedules.delete(s.scheduleId)
+      console.log("Hapus schedule lama:", s.scheduleId)
+    }
+  }
+
+  const result = await client.schedules.create({ destination, cron, retries: 3 })
   console.log("Jadwal QStash siap:", cron, "->", destination)
   console.log("Schedule ID:", result.scheduleId)
 } catch (err) {
