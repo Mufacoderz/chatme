@@ -66,6 +66,7 @@ model Message {
   isBot           Boolean   @default(false)  // true = pesan dari sistem reminder
   remindAt        DateTime?                  // waktu reminder diset user
   remindSnoozeAt  DateTime?                  // waktu baru setelah ditunda
+  remindNotifiedAt DateTime?                 // waktu terakhir notifikasi pengingat dikirim (dipakai untuk notif ulang)
   isRemindDone    Boolean   @default(false)  // reminder sudah di-resolve
   sourceMessageId String? @unique             // relasi ke pesan asli yang di-remind (unique mencegah duplikat bot reminder)
   userId          String
