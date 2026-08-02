@@ -9,6 +9,7 @@ import MessageBubble from "./MessageBubble"
 import ChecklistBubble from "./ChecklistBubble"
 import { MessageType } from "@prisma/client"
 import { useMessageActions } from "@/hooks/useMessageActions"
+import { EDIT_WINDOW_MS } from "@/lib/editWindow"
 import type { ChatMessage } from "@/types/chat"
 
 type Props = {
@@ -33,6 +34,9 @@ const BubbleWrapper = memo(function BubbleWrapper({
   const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { editMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle } = useMessageActions()
+
+  // Jendela edit 24 jam rolling dari createdAt — sinkron sama enforce di server.
+  const canEditByTime = Date.now() - new Date(message.createdAt).getTime() <= EDIT_WINDOW_MS
 
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
@@ -123,6 +127,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
           isDone={message.isDone}
           isPinned={message.isPinned}
           hasActiveReminder={Boolean(message.remindAt && !message.isRemindDone)}
+          canEditByTime={canEditByTime}
           onCopy={handleCopy}
           onEdit={() => { setMenuPos(null); setShowEdit(true) }}
           onToggleDone={handleToggleDone}

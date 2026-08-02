@@ -13,14 +13,21 @@ type Props = {
 export default function EditMessageModal({ initialText, onSave, onClose }: Props) {
   const [text, setText] = useState(initialText)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSave() {
     const trimmed = text.trim()
     if (!trimmed || trimmed === initialText) return
     setLoading(true)
-    await onSave(trimmed)
-    setLoading(false)
-    onClose()
+    setError(null)
+    try {
+      await onSave(trimmed)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan perubahan")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -56,6 +63,10 @@ export default function EditMessageModal({ initialText, onSave, onClose }: Props
           maxLength={2000}
           className="neo-input w-full resize-none rounded-xl bg-[var(--surface2)] px-4 py-3 text-sm outline-none"
         />
+
+        {error && (
+          <p className="mt-2 text-sm font-medium text-[var(--coral)]">{error}</p>
+        )}
 
         <button
           type="button"

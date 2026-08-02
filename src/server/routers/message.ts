@@ -2,6 +2,7 @@ import { z } from "zod"
 import { MessageType } from "@prisma/client"
 import { router, protectedProcedure, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
+import { EDIT_WINDOW_MS } from "@/lib/editWindow"
 
 export const messageRouter = router({
   //list catatan per room (pagination)
@@ -135,11 +136,14 @@ export const messageRouter = router({
 
       const owned = await ctx.prisma.message.findFirst({
         where: { id, userId: ctx.userId },
-        select: { id: true, isDone: true, type: true },
+        select: { id: true, isDone: true, type: true, createdAt: true },
       })
       if (!owned) throw new TRPCError({ code: "NOT_FOUND" })
       if ("text" in data && (owned.isDone || owned.type !== "TEXT")) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Catatan ini tidak dapat diedit" })
+      }
+      if ("text" in data && Date.now() - owned.createdAt.getTime() > EDIT_WINDOW_MS) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Batas waktu edit (24 jam) sudah lewat" })
       }
 
       return ctx.prisma.message.update({ where: { id }, data })
@@ -278,9 +282,12 @@ export const messageRouter = router({
 
       const message = await ctx.prisma.message.findFirst({
         where: { id: input.id, userId: ctx.userId, type: MessageType.CHECKLIST },
-        select: { id: true },
+        select: { id: true, createdAt: true },
       })
       if (!message) throw new TRPCError({ code: "NOT_FOUND" })
+      if (Date.now() - message.createdAt.getTime() > EDIT_WINDOW_MS) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Batas waktu edit (24 jam) sudah lewat" })
+      }
 
       return ctx.prisma.$transaction(async (tx) => {
         await tx.checklistItem.deleteMany({ where: { messageId: input.id } })

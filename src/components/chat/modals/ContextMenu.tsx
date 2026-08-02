@@ -14,6 +14,7 @@ type Props = {
   isDone: boolean
   isPinned: boolean
   hasActiveReminder: boolean
+  canEditByTime: boolean
   onCopy: () => void
   onEdit: () => void
   onToggleDone: () => void
@@ -25,7 +26,7 @@ type Props = {
 }
 
 export default function ContextMenu({
-  x, y, isChecklist = false, isDone, isPinned, hasActiveReminder,
+  x, y, isChecklist = false, isDone, isPinned, hasActiveReminder, canEditByTime,
   onCopy, onEdit, onToggleDone, onRemind, onMarkReminded, onTogglePin, onDelete, onClose
 }: Props) {
 
@@ -40,7 +41,7 @@ export default function ContextMenu({
       onClick: onCopy,
       danger: false,
     }] : []),
-    ...(!isChecklist && !isDone ? [{
+    ...(!isChecklist && !isDone && canEditByTime ? [{
       icon: <FiEdit2 size={15} />,
       label: "Edit Catatan",
       onClick: onEdit,
