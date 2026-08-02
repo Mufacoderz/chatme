@@ -137,6 +137,26 @@ function updateSidebarPreview(
   })
 }
 
+// Patch langsung angka "belum selesai" (_count.messages) di cache room.list.
+// BroadcastChannel.postMessage gak nyampe ke tab pengirim sendiri, jadi tanpa
+// ini badge di tab aktif gak pernah ke-update realtime. Broadcast invalidate
+// yang lama tetap jalan buat sync antar tab.
+function adjustRoomUnfinishedCount(
+  queryClient: ReturnType<typeof useQueryClient>,
+  roomsKey: ReturnType<typeof getQueryKey>,
+  roomId: string,
+  delta: number
+) {
+  queryClient.setQueryData(roomsKey, (old: RoomData[] | undefined) => {
+    if (!old) return old
+    return old.map((r) =>
+      r.id === roomId
+        ? { ...r, _count: { ...r._count, messages: Math.max(0, r._count.messages + delta) } }
+        : r
+    )
+  })
+}
+
 function getMessagesFromCache(
   queryClient: ReturnType<typeof useQueryClient>,
   messagesKey: ReturnType<typeof getQueryKey>
@@ -218,6 +238,7 @@ export function useSendMessage(roomId: string) {
         text: realMessage.text,
         createdAt: new Date(realMessage.createdAt),
       })
+      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
       broadcastInvalidate(roomsKey)
     },
     onError: (_err, _input, context) => {
@@ -287,12 +308,18 @@ export function useDeleteMessage(roomId: string) {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
       msgs.filter((m) => m.id !== messageId)
     )
+    if (removed && !removed.isDone) {
+      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
+    }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
     return removed
   }, [queryClient, messagesKey, roomsKey, roomId])
 
   const restoreToView = useCallback((message: ChatMessage) => {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => [...msgs, message])
+    if (!message.isDone) {
+      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
+    }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
   }, [queryClient, messagesKey, roomsKey, roomId])
 
@@ -338,6 +365,7 @@ export function useClearBotMessages(roomId: string) {
 export function useToggleDone(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
 
   return trpc.message.toggleDone.useMutation({
     onMutate: async ({ id, isDone }) => {
@@ -346,6 +374,7 @@ export function useToggleDone(roomId: string) {
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) => (m.id === id ? { ...m, isDone } : m))
       )
+      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, isDone ? -1 : +1)
       return { previous }
     },
     onSuccess: (updated) => {
@@ -439,14 +468,19 @@ export function useMarkReminded(roomId: string) {
 export function useMarkRemindedAndDone(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
 
   return trpc.message.markRemindedAndDone.useMutation({
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
+      const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) => (m.id === id ? { ...m, isRemindDone: true, isDone: true } : m))
       )
+      if (prevMessage && !prevMessage.isDone) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
+      }
       return { previous }
     },
     onSuccess: () => {
@@ -463,12 +497,15 @@ export function useMarkRemindedAndDone(roomId: string) {
 export function useChecklistToggle(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
 
   return trpc.message.updateChecklist.useMutation({
     onMutate: async ({ id, items }) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
       const allDone = items.every((i) => i.isDone)
+      const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
+      const prevDone = prevMessage?.isDone ?? false
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === id
@@ -479,6 +516,9 @@ export function useChecklistToggle(roomId: string) {
             : m
         )
       )
+      if (prevDone !== allDone) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, allDone ? -1 : +1)
+      }
       return { previous }
     },
     onSuccess: (updated) => {
@@ -508,6 +548,7 @@ export function useToggleChecklistItem() {
 export function useToggleChecklistItemOptimistic(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
+  const roomsKey = getRoomsKey()
   const toggleItem = useToggleChecklistItem()
 
   const optimisticToggle = useCallback(
@@ -515,6 +556,7 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
       const nextItems = prevItems.map((item) =>
         item.id === itemId ? { ...item, isDone } : item
       )
+      const prevDone = prevItems.every((item) => item.isDone)
       const messageIsDone = nextItems.every((item) => item.isDone)
 
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
@@ -524,6 +566,10 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
             : m
         )
       )
+
+      if (prevDone !== messageIsDone) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, messageIsDone ? -1 : +1)
+      }
 
       toggleItem.mutate(
         { id: itemId, isDone },
@@ -540,7 +586,7 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
         }
       )
     },
-    [queryClient, messagesKey, toggleItem]
+    [queryClient, messagesKey, roomsKey, roomId, toggleItem]
   )
 
   return { optimisticToggle, toggleItem }
