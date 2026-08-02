@@ -298,41 +298,4 @@ export const messageRouter = router({
         })
       })
     }),
-
-  //generate bubble bot buat reminder yang jatuh tempo
-  checkReminders: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      const pendingReminders = await ctx.prisma.message.findMany({
-        where: {
-          userId: ctx.userId,
-          isBot: false,
-          isRemindDone: false,
-          remindAt: { lte: new Date() },
-          reminders: { none: {} },
-        },
-      })
-
-      if (pendingReminders.length === 0) return []
-
-      await ctx.prisma.message.createMany({
-        data: pendingReminders.map((reminder) => ({
-          text: "",
-          isBot: true,
-          sourceMessageId: reminder.id,
-          roomId: reminder.roomId,
-          userId: ctx.userId,
-        })),
-        skipDuplicates: true,
-      })
-
-      return ctx.prisma.message.findMany({
-        where: {
-          userId: ctx.userId,
-          isBot: true,
-          sourceMessageId: { in: pendingReminders.map((r) => r.id) },
-        },
-        include: { sourceMessage: true, checklistItems: { orderBy: { position: "asc" } } },
-        orderBy: { createdAt: "asc" },
-      })
-    }),
 })

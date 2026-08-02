@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { sendPushToUser } from "@/lib/webPush"
 
-export async function GET(req: Request) {
+async function handleCheckReminders(req: Request) {
   const authHeader = req.headers.get("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response("Unauthorized", { status: 401 })
@@ -42,4 +42,14 @@ export async function GET(req: Request) {
   }
 
   return Response.json({ processed: pendingReminders.length })
+}
+
+// QStash scheduler default publish lewat POST, tapi biar aman dua-duanya
+// didukung (GET juga masih valid untuk trigger manual / setup lama).
+export async function GET(req: Request) {
+  return handleCheckReminders(req)
+}
+
+export async function POST(req: Request) {
+  return handleCheckReminders(req)
 }
