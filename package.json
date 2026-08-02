@@ -9,7 +9,8 @@
     "build": "prisma generate && next build --webpack",
     "postinstall": "prisma generate && node scripts/generate-room-icons.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "qstash:setup": "node scripts/setup-qstash-schedule.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
