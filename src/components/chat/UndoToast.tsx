@@ -27,9 +27,9 @@ export default function UndoToast({ message, onUndo, onTimeout, duration = 5000 
   }
 
   return (
-    <div className="fixed bottom-6 left-3 right-3 z-50 flex justify-center pointer-events-none">
+    <div className="fixed top-20 left-3 right-3 z-50 flex justify-center pointer-events-none">
       <div
-        className={`neo-panel pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 shadow-lg ${exiting ? "animate-slide-down" : "animate-slide-up"}`}
+        className={`neo-panel pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 shadow-lg ${exiting ? "animate-toast-out-top" : "animate-toast-in-top"}`}
         style={{
           background: "var(--surface2)",
           border: "2px solid var(--neo-line)",

@@ -133,6 +133,24 @@
   animation: slide-down 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+@keyframes toast-in-top {
+  from { transform: translateY(-80px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes toast-out-top {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-80px); opacity: 0; }
+}
+
+.animate-toast-in-top {
+  animation: toast-in-top 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-toast-out-top {
+  animation: toast-out-top 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 @layer components {
   .neo-panel {
     border: 2px solid var(--neo-line);
