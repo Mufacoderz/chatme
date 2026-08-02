@@ -23,8 +23,8 @@ type Props = {
   reminders: Message[]
   messages: Message[]
   onReminderDone: (messageId: string) => void
-  onClear: () => void
-  onClearBots: () => void
+  onClear: () => Promise<void>
+  onClearBots: () => Promise<void>
 
   searchQuery: string
   onSearch: (query: string) => void

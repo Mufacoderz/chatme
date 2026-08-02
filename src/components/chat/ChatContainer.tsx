@@ -77,12 +77,12 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     markRemindedAndDone.mutate({ id: messageId })
   }
 
-  function handleClear() {
-    clearMessages.mutate({ roomId })
+  async function handleClear() {
+    await clearMessages.mutateAsync({ roomId })
   }
 
-  function handleClearBots() {
-    clearBotMessages.mutate({ roomId })
+  async function handleClearBots() {
+    await clearBotMessages.mutateAsync({ roomId })
   }
 
   // Klik hapus -> pesan langsung hilang dari chat (optimistic). Kalau
