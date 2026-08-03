@@ -204,7 +204,7 @@ export function useSendMessage(roomId: string) {
         id: tempId,
         text: input.text,
         type: input.type ?? MessageType.TEXT,
-        isDone: false,
+        taskStatus: "PENDING",
         isPinned: false,
         isBot: false,
         remindAt: null,
@@ -309,7 +309,7 @@ export function useDeleteMessage(roomId: string) {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
       msgs.filter((m) => m.id !== messageId)
     )
-    if (removed && !removed.isDone) {
+    if (removed && removed.taskStatus === "PENDING") {
       adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
     }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
@@ -318,7 +318,7 @@ export function useDeleteMessage(roomId: string) {
 
   const restoreToView = useCallback((message: ChatMessage) => {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => [...msgs, message])
-    if (!message.isDone) {
+    if (message.taskStatus === "PENDING") {
       adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
     }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
@@ -369,18 +369,22 @@ export function useToggleDone(roomId: string) {
   const roomsKey = getRoomsKey()
 
   return trpc.message.toggleDone.useMutation({
-    onMutate: async ({ id, isDone }) => {
+    onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
+      const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
-        msgs.map((m) => (m.id === id ? { ...m, isDone } : m))
+        msgs.map((m) => (m.id === id ? { ...m, taskStatus: status } : m))
       )
-      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, isDone ? -1 : +1)
+      const wasPending = prevMessage ? prevMessage.taskStatus === "PENDING" : false
+      const nowPending = status === "PENDING"
+      if (wasPending && !nowPending) adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
+      if (!wasPending && nowPending) adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
       return { previous }
     },
     onSuccess: (updated) => {
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
-        msgs.map((m) => (m.id === updated.id ? { ...m, isDone: updated.isDone } : m))
+        msgs.map((m) => (m.id === updated.id ? { ...m, taskStatus: updated.taskStatus } : m))
       )
       broadcastInvalidate(messagesKey)
     },
@@ -477,9 +481,9 @@ export function useMarkRemindedAndDone(roomId: string) {
       const previous = queryClient.getQueryData(messagesKey)
       const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
-        msgs.map((m) => (m.id === id ? { ...m, isRemindDone: true, isDone: true } : m))
+        msgs.map((m) => (m.id === id ? { ...m, isRemindDone: true, taskStatus: "DONE" } : m))
       )
-      if (prevMessage && !prevMessage.isDone) {
+      if (prevMessage && prevMessage.taskStatus === "PENDING") {
         adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
       }
       return { previous }
@@ -505,20 +509,21 @@ export function useChecklistToggle(roomId: string) {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const previous = queryClient.getQueryData(messagesKey)
       const allDone = items.every((i) => i.isDone)
+      const nextStatus = allDone ? "DONE" : "PENDING"
       const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
-      const prevDone = prevMessage?.isDone ?? false
+      const prevStatus = prevMessage?.taskStatus ?? "PENDING"
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === id
             ? { ...m, checklistItems: m.checklistItems.map((ci) => {
                 const updated = items.find((i) => i.text === ci.text)
                 return updated ? { ...ci, isDone: updated.isDone } : ci
-              }), isDone: allDone }
+              }), taskStatus: nextStatus }
             : m
         )
       )
-      if (prevDone !== allDone) {
-        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, allDone ? -1 : +1)
+      if (prevStatus !== nextStatus) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, nextStatus === "DONE" ? -1 : +1)
       }
       return { previous }
     },
@@ -526,7 +531,7 @@ export function useChecklistToggle(roomId: string) {
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === updated.id
-            ? { ...m, text: updated.text, isDone: updated.isDone, checklistItems: updated.checklistItems }
+            ? { ...m, text: updated.text, taskStatus: updated.taskStatus, checklistItems: updated.checklistItems }
             : m
         )
       )
@@ -557,19 +562,19 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
       const nextItems = prevItems.map((item) =>
         item.id === itemId ? { ...item, isDone } : item
       )
-      const prevDone = prevItems.every((item) => item.isDone)
-      const messageIsDone = nextItems.every((item) => item.isDone)
+      const prevStatus = prevItems.every((item) => item.isDone) ? "DONE" : "PENDING"
+      const nextStatus = nextItems.every((item) => item.isDone) ? "DONE" : "PENDING"
 
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === messageId
-            ? { ...m, checklistItems: nextItems, isDone: messageIsDone }
+            ? { ...m, checklistItems: nextItems, taskStatus: nextStatus }
             : m
         )
       )
 
-      if (prevDone !== messageIsDone) {
-        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, messageIsDone ? -1 : +1)
+      if (prevStatus !== nextStatus) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, nextStatus === "DONE" ? -1 : +1)
       }
 
       toggleItem.mutate(
@@ -579,7 +584,7 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
             updateMessagesCache(queryClient, messagesKey, (msgs) =>
               msgs.map((m) =>
                 m.id === messageId
-                  ? { ...m, checklistItems: prevItems, isDone: prevItems.every((i) => i.isDone) }
+                  ? { ...m, checklistItems: prevItems, taskStatus: prevItems.every((i) => i.isDone) ? "DONE" : "PENDING" }
                   : m
               )
             )
