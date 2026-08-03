@@ -30,18 +30,48 @@ const serwist = new Serwist({
 
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {}
+  const options = {
+    body: data.body ?? "",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: data.tag,
+    renotify: true,
+    requireInteraction: true,
+    silent: false,
+    vibrate: [200, 100, 200],
+    data: { url: data.url ?? "/", reminderId: data.id },
+    actions: [
+      { action: "snooze", title: "Tunda 15 menit" },
+      { action: "done", title: "Selesai" },
+    ],
+  }
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "Chatme", {
-      body: data.body ?? "",
-      icon: "/icon-192.png",
-      tag: data.tag,
-      data: { url: data.url ?? "/" },
-    })
+    self.registration.showNotification(data.title ?? "Chatme", options)
   )
 })
 
 self.addEventListener("notificationclick", (event) => {
+  const reminderId = event.notification.data?.reminderId
+  const action = event.action
+
   event.notification.close()
+
+  if ((action === "snooze" || action === "done") && reminderId) {
+    const endpoint = action === "snooze" ? "snooze" : "done"
+    event.waitUntil(
+      fetch(`/api/reminders/${reminderId}/${endpoint}`, { method: "POST" })
+        .then(() => {
+          // Biar tab yang lagi kebuka ikut ke-refresh, pakai channel sync yang sudah ada.
+          new BroadcastChannel("chatme-sync").postMessage({
+            type: "invalidate",
+            queryKey: [["message"]],
+          })
+        })
+        .catch(() => {})
+    )
+    return
+  }
+
   const url = event.notification.data?.url ?? "/"
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then((clientsArr) => {
