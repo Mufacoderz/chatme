@@ -305,7 +305,7 @@ export default function ChatMessages({
 
                 return (
                   <div
-                    key={message.id}
+                    key={message.tempId ?? message.id}
                     ref={isActiveMatch ? activeRef : null}
                     className="rounded-2xl transition-opacity duration-300"
                     style={{

@@ -201,6 +201,7 @@ export function useSendMessage(roomId: string) {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       const now = new Date()
       const tempMessage: ChatMessage = {
+        tempId,
         id: tempId,
         text: input.text,
         type: input.type ?? MessageType.TEXT,
@@ -233,7 +234,7 @@ export function useSendMessage(roomId: string) {
     },
     onSuccess: (realMessage, _input, context) => {
       updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-        msgs.map((m) => (m.id === context?.tempId ? realMessage : m))
+        msgs.map((m) => (m.id === context?.tempId ? { ...realMessage, tempId: context.tempId } : m))
       )
       updateSidebarPreview(queryClient, roomsKey, roomId, {
         text: realMessage.text,
