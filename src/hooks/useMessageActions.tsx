@@ -17,6 +17,7 @@ type MessageActions = {
   removeFromView: (messageId: string) => ChatMessage | null
   restoreToView: (message: ChatMessage) => void
   commitDelete: (messageId: string) => void
+  deleteAsync: (messageId: string) => Promise<unknown>
 }
 
 const MessageActionsContext = createContext<MessageActions | null>(null)
@@ -43,6 +44,7 @@ export function MessageActionsProvider({
       removeFromView: deleteMessage.removeFromView,
       restoreToView: deleteMessage.restoreToView,
       commitDelete: deleteMessage.commitDelete,
+      deleteAsync: deleteMessage.deleteAsync,
     }),
     [editMessage, deleteMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle]
   )

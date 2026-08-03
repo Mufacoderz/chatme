@@ -328,7 +328,11 @@ export function useDeleteMessage(roomId: string) {
     mutation.mutate({ id: messageId })
   }, [mutation])
 
-  return { removeFromView, restoreToView, commitDelete }
+  const deleteAsync = useCallback((messageId: string) => {
+    return mutation.mutateAsync({ id: messageId })
+  }, [mutation])
+
+  return { removeFromView, restoreToView, commitDelete, deleteAsync }
 }
 
 // ── Clear all messages in room ──────────────────────────────────────────
