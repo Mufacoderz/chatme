@@ -48,6 +48,7 @@ async function handler() {
 
   for (const reminder of dueForPush) {
     await sendPushToUser(prisma, reminder.userId, {
+      id: reminder.id,
       title: "Pengingat Chatme",
       body: reminder.text || "Ada pengingat yang perlu kamu cek.",
       url: `/room/${reminder.roomId}`,

@@ -8,6 +8,7 @@ webpush.setVapidDetails(
 )
 
 type PushPayload = {
+  id: string
   title: string
   body: string
   url?: string
@@ -22,7 +23,8 @@ export async function sendPushToUser(prisma: PrismaClient, userId: string, paylo
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          JSON.stringify(payload)
+          JSON.stringify(payload),
+          { urgency: "high", TTL: 300 }
         )
       } catch (err) {
         const statusCode = (err as { statusCode?: number }).statusCode
