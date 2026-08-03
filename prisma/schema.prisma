@@ -61,7 +61,7 @@ model Message {
   id              String    @id @default(cuid())
   text            String
   type            MessageType @default(TEXT)
-  isDone          Boolean   @default(false)  // pesan ditandai selesai
+  taskStatus      TaskStatus @default(PENDING) // status pesan: pending/done/tidak dilakukan
   isPinned        Boolean   @default(false)  // pesan di-pin
   isBot           Boolean   @default(false)  // true = pesan dari sistem reminder
   remindAt        DateTime?                  // waktu reminder diset user
@@ -104,6 +104,12 @@ model ChecklistItem {
 enum MessageType {
   TEXT
   CHECKLIST
+}
+
+enum TaskStatus {
+  PENDING
+  DONE
+  NOT_DONE
 }
 
 model Account {
