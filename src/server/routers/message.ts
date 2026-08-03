@@ -137,10 +137,10 @@ export const messageRouter = router({
 
       const owned = await ctx.prisma.message.findFirst({
         where: { id, userId: ctx.userId },
-        select: { id: true, isDone: true, type: true, createdAt: true },
+        select: { id: true, taskStatus: true, type: true, createdAt: true },
       })
       if (!owned) throw new TRPCError({ code: "NOT_FOUND" })
-      if ("text" in data && (owned.isDone || owned.type !== "TEXT")) {
+      if ("text" in data && (owned.taskStatus !== "PENDING" || owned.type !== "TEXT")) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Catatan ini tidak dapat diedit" })
       }
       if ("text" in data && Date.now() - owned.createdAt.getTime() > EDIT_WINDOW_MS) {
@@ -152,11 +152,11 @@ export const messageRouter = router({
 
   //tandai catatan selesai/belum
   toggleDone: protectedProcedure
-    .input(z.object({ id: z.string(), isDone: z.boolean() }))
+    .input(z.object({ id: z.string(), status: z.enum(["PENDING", "DONE", "NOT_DONE"]) }))
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.prisma.message.updateMany({
         where: { id: input.id, userId: ctx.userId },
-        data: { isDone: input.isDone },
+        data: { taskStatus: input.status },
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
@@ -212,7 +212,7 @@ export const messageRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.prisma.message.updateMany({
         where: { id: input.id, userId: ctx.userId },
-        data: { isRemindDone: true, isDone: true },
+        data: { isRemindDone: true, taskStatus: "DONE" },
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
@@ -297,7 +297,7 @@ export const messageRouter = router({
           where: { id: input.id },
           data: {
             text: normalizedTitle,
-            isDone: normalizedItems.every((item) => item.isDone),
+            taskStatus: normalizedItems.every((item) => item.isDone) ? "DONE" : "PENDING",
             checklistItems: { create: normalizedItems.map((item, position) => ({ ...item, position })) },
           },
         })

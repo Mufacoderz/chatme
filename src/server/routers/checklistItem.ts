@@ -23,9 +23,9 @@ export const checklistItemRouter = router({
         })
         await tx.message.update({
           where: { id: updated.messageId },
-          data: { isDone: remaining === 0 },
+          data: { taskStatus: remaining === 0 ? "DONE" : "PENDING" },
         })
-        return { item: updated, messageIsDone: remaining === 0 }
+        return { item: updated, messageIsDone: remaining === 0 } // return value gak dikonsumsi client, biarin
       })
     }),
 })

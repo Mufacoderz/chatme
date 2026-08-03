@@ -8,7 +8,7 @@ export async function getRoomsForUser(prisma: PrismaClient, userId: string) {
     include: {
       _count: {
         select: {
-          messages: { where: { isDone: false, isBot: false } },
+          messages: { where: { taskStatus: "PENDING", isBot: false } },
         },
       },
       messages: {
