@@ -4,7 +4,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX, FiCheckSquare } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
@@ -37,8 +37,21 @@ export default function ContextMenu({
   // jendela ini diabaikan.
   const [openedAt] = useState(() => Date.now())
   const GHOST_CLICK_GUARD_MS = 350
+  const pointerDownAtRef = useRef<number | null>(null)
+
+  function handleBackdropPointerDown() {
+    pointerDownAtRef.current = Date.now()
+  }
 
   function handleBackdropClick() {
+    // Kalau pointerdown-nya terjadi SEBELUM modal dibuka (bukan setelah), itu
+    // sisa dari long-press yg ngebuka modal ini — release nya bikin synthetic
+    // click. Jangan dianggap click abis backdrop, supaya long-press tahan lama
+    // (jauh di atas guard waktu) juga gak nutup modal.
+    if (pointerDownAtRef.current !== null && pointerDownAtRef.current < openedAt) {
+      pointerDownAtRef.current = null
+      return
+    }
     if (Date.now() - openedAt < GHOST_CLICK_GUARD_MS) return
     onClose()
   }
@@ -100,6 +113,7 @@ export default function ContextMenu({
     <ModalPortal>
       <div
         className="fixed inset-0 z-40"
+        onPointerDown={handleBackdropPointerDown}
         onClick={handleBackdropClick}
       >
         <div
