@@ -72,7 +72,7 @@ const ChecklistBubble = memo(function ChecklistBubble({
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === updated.id
-            ? { ...m, text: updated.text, isDone: updated.isDone, checklistItems: updated.checklistItems }
+            ? { ...m, text: updated.text, taskStatus: updated.taskStatus, checklistItems: updated.checklistItems }
             : m
         )
       )

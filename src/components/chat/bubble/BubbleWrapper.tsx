@@ -71,11 +71,11 @@ const BubbleWrapper = memo(function BubbleWrapper({
     navigator.clipboard?.writeText(message.text)
   }, [message.text])
 
-  const handleToggleDone = useCallback(() => {
+  const handleSetStatus = useCallback((status: "PENDING" | "DONE" | "NOT_DONE") => {
     if (message.type === MessageType.CHECKLIST) {
       const nextItems = message.checklistItems.map((item) => ({
         text: item.text,
-        isDone: !message.isDone,
+        isDone: status === "DONE",
       }))
       checklistToggle.mutate({
         id: message.id,
@@ -84,7 +84,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
       })
       return
     }
-    toggleDone.mutate({ id: message.id, isDone: !message.isDone })
+    toggleDone.mutate({ id: message.id, status })
   }, [message, toggleDone, checklistToggle])
 
   const handleTogglePin = useCallback(() => {
@@ -137,13 +137,13 @@ const BubbleWrapper = memo(function BubbleWrapper({
           x={menuPos.x}
           y={menuPos.y}
           isChecklist={message.type === MessageType.CHECKLIST}
-          isDone={message.isDone}
+          taskStatus={message.taskStatus}
           isPinned={message.isPinned}
           hasActiveReminder={Boolean(message.remindAt && !message.isRemindDone)}
           canEditByTime={canEditByTime}
           onCopy={handleCopy}
           onEdit={() => { setMenuPos(null); setShowEdit(true) }}
-          onToggleDone={handleToggleDone}
+          onSetStatus={handleSetStatus}
           onRemind={() => { setMenuPos(null); setShowRemind(true) }}
           onMarkReminded={handleMarkReminded}
           onTogglePin={handleTogglePin}

@@ -5,20 +5,20 @@
 "use client"
 
 import { useState } from "react"
-import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2 } from "react-icons/fi"
+import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
   x: number
   y: number
   isChecklist?: boolean
-  isDone: boolean
+  taskStatus: "PENDING" | "DONE" | "NOT_DONE"
   isPinned: boolean
   hasActiveReminder: boolean
   canEditByTime: boolean
   onCopy: () => void
   onEdit: () => void
-  onToggleDone: () => void
+  onSetStatus: (status: "PENDING" | "DONE" | "NOT_DONE") => void
   onRemind: () => void
   onMarkReminded: () => void
   onTogglePin: () => void
@@ -27,8 +27,8 @@ type Props = {
 }
 
 export default function ContextMenu({
-  x, y, isChecklist = false, isDone, isPinned, hasActiveReminder, canEditByTime,
-  onCopy, onEdit, onToggleDone, onRemind, onMarkReminded, onTogglePin, onDelete, onClose
+  x, y, isChecklist = false, taskStatus, isPinned, hasActiveReminder, canEditByTime,
+  onCopy, onEdit, onSetStatus, onRemind, onMarkReminded, onTogglePin, onDelete, onClose
 }: Props) {
 
   // Ghost click dari touch (synthetic click yang dikirim browser setelah
@@ -53,18 +53,22 @@ export default function ContextMenu({
       onClick: onCopy,
       danger: false,
     }] : []),
-    ...(!isChecklist && !isDone && canEditByTime ? [{
+    ...(!isChecklist && taskStatus === "PENDING" && canEditByTime ? [{
       icon: <FiEdit2 size={15} />,
       label: "Edit Catatan",
       onClick: onEdit,
       danger: false,
     }] : []),
-    ...(!isChecklist ? [{
-      icon: <FiCheck size={15} />,
-      label: isDone ? "Tandai Belum Selesai" : "Tandai Selesai",
-      onClick: onToggleDone,
-      danger: false,
-    }] : []),
+    ...(!isChecklist ? (
+      taskStatus === "PENDING"
+        ? [
+            { icon: <FiCheck size={15} />, label: "Tandai Selesai", onClick: () => onSetStatus("DONE"), danger: false },
+            { icon: <FiX size={15} />, label: "Tandai Tidak Dilakukan", onClick: () => onSetStatus("NOT_DONE"), danger: false },
+          ]
+        : [
+            { icon: <FiCheck size={15} />, label: "Tandai Belum Selesai", onClick: () => onSetStatus("PENDING"), danger: false },
+          ]
+    ) : []),
     {
       icon: hasActiveReminder ? <FiCheckCircle size={15} /> : <FiBell size={15} />,
       label: hasActiveReminder ? "Tandai sudah diingatkan" : "Ingatkan",

@@ -3,7 +3,7 @@
 import { useEffect, useState, memo } from "react"
 import { Message } from "@prisma/client"
 import { IoCheckmarkDone } from "react-icons/io5"
-import { FiBell, FiBookmark, FiCheck } from "react-icons/fi"
+import { FiBell, FiBookmark, FiCheck, FiX } from "react-icons/fi"
 import { parseFormattedText } from "@/lib/messageFormat"
 
 type Props = {
@@ -76,9 +76,9 @@ const MessageBubble = memo(function MessageBubble({
         onTouchEnd={onTouchEnd}
         onTouchMove={onTouchMove}
         className="neo-card relative max-w-[82%] rotate-[0.4deg] rounded-xl rounded-br-sm bg-[var(--accent)] px-4 py-2.5"
-        style={{ opacity: message.isDone ? 0.78 : 1 }}
+        style={{ opacity: message.taskStatus !== "PENDING" ? 0.78 : 1 }}
       >
-        {(message.isPinned || hasActiveReminder || message.isDone) && (
+        {(message.isPinned || hasActiveReminder || message.taskStatus !== "PENDING") && (
           <div className="absolute -right-2 -top-2 flex items-center gap-1">
             {message.isPinned && (
               <div className="flex h-6 w-6 -rotate-6 items-center justify-center rounded-md border-2 border-[var(--neo-line)] bg-[var(--bg)] shadow-[2px_2px_0_var(--neo-shadow)]">
@@ -99,9 +99,14 @@ const MessageBubble = memo(function MessageBubble({
               </div>
             )}
 
-            {message.isDone && (
+            {message.taskStatus === "DONE" && (
               <div className="flex h-6 w-6 rotate-6 items-center justify-center rounded-md border-2 border-[var(--neo-line)] bg-[var(--success)] text-[var(--text)] shadow-[2px_2px_0_var(--neo-shadow)]">
                 <FiCheck size={13} strokeWidth={3} />
+              </div>
+            )}
+            {message.taskStatus === "NOT_DONE" && (
+              <div className="flex h-6 w-6 rotate-6 items-center justify-center rounded-md border-2 border-[var(--neo-line)] bg-[var(--coral)] text-[var(--text)] shadow-[2px_2px_0_var(--neo-shadow)]">
+                <FiX size={13} strokeWidth={3} />
               </div>
             )}
           </div>
@@ -136,7 +141,9 @@ const MessageBubble = memo(function MessageBubble({
         <IoCheckmarkDone
           size={16}
           className={`transition-all ${
-            message.isDone ? "text-[var(--success)]" : "text-[var(--text3)]"
+            message.taskStatus === "DONE" ? "text-[var(--success)]" :
+            message.taskStatus === "NOT_DONE" ? "text-[var(--coral)]" :
+            "text-[var(--text3)]"
           }`}
         />
       </div>

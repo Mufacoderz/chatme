@@ -23,7 +23,7 @@ type Props = {
 
 function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onLoadMore }: Props) {
   const roomId = room.id
-  const { toggleDone, markReminded, setReminder, removeFromView, restoreToView, commitDelete } = useMessageActions()
+  const { markReminded, setReminder, removeFromView, restoreToView, commitDelete } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
   const clearMessages = useClearMessages(roomId)
   const clearBotMessages = useClearBotMessages(roomId)
@@ -55,9 +55,9 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   }
 
   const handleBotDone = useCallback((botMessageId: string, sourceMessageId: string) => {
-    toggleDone.mutate({ id: sourceMessageId, isDone: true })
+    markRemindedAndDone.mutate({ id: sourceMessageId })
     markReminded.mutate({ id: botMessageId })
-  }, [toggleDone, markReminded])
+  }, [markRemindedAndDone, markReminded])
 
   const handleBotSnooze = useCallback((botMessageId: string, sourceMessageId: string) => {
     setSnoozeBotId(botMessageId)

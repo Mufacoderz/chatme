@@ -25,7 +25,7 @@ export default function PinnedMessagesModal({ messages, onClose }: Props) {
   }
 
   async function handleDone(messageId: string) {
-    await utils.client.message.toggleDone.mutate({ id: messageId, isDone: true })
+    await utils.client.message.toggleDone.mutate({ id: messageId, status: "DONE" })
     await utils.client.message.togglePin.mutate({ id: messageId, isPinned: false })
     queryClient.invalidateQueries({ queryKey: roomsKey })
   }
