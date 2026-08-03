@@ -18,6 +18,10 @@ type Props = {
   roomId: string
   searchQuery?: string
   activeMatchId?: string | null
+  selectionMode?: boolean
+  selectedIds?: Set<string>
+  onToggleSelect?: (messageId: string) => void
+  onEnterSelection?: (messageId: string) => void
 }
 
 const SCROLL_THRESHOLD = 400
@@ -97,6 +101,10 @@ export default function ChatMessages({
   roomId,
   searchQuery = "",
   activeMatchId = null,
+  selectionMode = false,
+  selectedIds = new Set(),
+  onToggleSelect,
+  onEnterSelection,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -313,6 +321,10 @@ export default function ChatMessages({
                       isNew={isTemp}
                       searchQuery={searchQuery}
                       onDeleteMessage={onDeleteMessage}
+                      selectionMode={selectionMode}
+                      isSelected={selectedIds.has(message.id)}
+                      onToggleSelect={onToggleSelect}
+                      onEnterSelection={onEnterSelection}
                     />
                   </div>
                 )

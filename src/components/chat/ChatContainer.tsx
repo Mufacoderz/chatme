@@ -7,6 +7,7 @@ import ChatHeader from "./ChatHeader"
 import ChatInput from "./ChatInput"
 import SnoozeModal from "./modals/SnoozeModal"
 import UndoToast from "./UndoToast"
+import ClearMessagesModal from "./modals/ClearMessagesModal"
 import { MessageActionsProvider, useMessageActions } from "@/hooks/useMessageActions"
 import { useMarkRemindedAndDone, useClearMessages, useClearBotMessages } from "@/hooks/useMessages"
 import { MessageType } from "@prisma/client"
@@ -23,7 +24,7 @@ type Props = {
 
 function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onLoadMore }: Props) {
   const roomId = room.id
-  const { markReminded, setReminder, removeFromView, restoreToView, commitDelete } = useMessageActions()
+  const { markReminded, setReminder, removeFromView, restoreToView, commitDelete, togglePin, deleteAsync } = useMessageActions()
   const markRemindedAndDone = useMarkRemindedAndDone(roomId)
   const clearMessages = useClearMessages(roomId)
   const clearBotMessages = useClearBotMessages(roomId)
@@ -33,6 +34,9 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
   const [searchQuery, setSearchQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
   const [undoMessageId, setUndoMessageId] = useState<string | null>(null)
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
   const pendingDeleteRef = useRef<ChatMessage | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -118,6 +122,49 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
     setUndoMessageId(null)
   }
 
+  function handleEnterSelection(messageId: string) {
+    setSelectionMode(true)
+    setSelectedIds(new Set([messageId]))
+  }
+
+  function handleToggleSelect(messageId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(messageId)) next.delete(messageId)
+      else next.add(messageId)
+      return next
+    })
+  }
+
+  function handleCancelSelection() {
+    setSelectionMode(false)
+    setSelectedIds(new Set())
+  }
+
+  function handleBulkPin() {
+    const selected = messages.filter((m) => selectedIds.has(m.id))
+    if (selected.length === 0) return
+    const allPinned = selected.every((m) => m.isPinned)
+    const nextPinned = !allPinned
+    selected.forEach((m) => togglePin.mutate({ id: m.id, isPinned: nextPinned }))
+    handleCancelSelection()
+  }
+
+  async function handleBulkDeleteConfirm() {
+    const ids = Array.from(selectedIds)
+    await Promise.all(ids.map((id) => deleteAsync(id)))
+    ids.forEach((id) => removeFromView(id))
+    handleCancelSelection()
+  }
+
+  function handleBulkCopy() {
+    const texts = messages
+      .filter((m) => selectedIds.has(m.id))
+      .map((m) => `- ${m.text}`)
+    navigator.clipboard.writeText(texts.join("\n"))
+    // sengaja gak panggil handleCancelSelection() — bulk copy gak nge-exit mode seleksi
+  }
+
   // Kalau user pindah room/nutup chat pas masih ada delete yg nunggu di
   // undo-window, langsung finalisasi (hapus permanen) — jangan biarin
   // ke-cancel gitu aja, soalnya pesannya udah kelanjur ilang dari cache.
@@ -144,9 +191,15 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         onClearBots={handleClearBots}
         searchQuery={searchQuery}
         onSearch={handleSearch}
+        selectionMode={selectionMode}
+        selectedCount={selectedIds.size}
+        onCancelSelection={handleCancelSelection}
+        onBulkPin={handleBulkPin}
+        onBulkDeleteRequest={() => setShowBulkDeleteConfirm(true)}
+        onBulkCopy={handleBulkCopy}
       />
 
-      {searchQuery.trim() && (
+      {searchQuery.trim() && !selectionMode && (
         <div
           className="flex items-center justify-between px-4 py-2 border-b text-xs"
           style={{ background: "var(--surface)", borderColor: "var(--border)" }}
@@ -199,6 +252,10 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
         roomId={roomId}
         searchQuery={searchQuery}
         activeMatchId={matchedMessages[activeIndex]?.id ?? null}
+        selectionMode={selectionMode}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
+        onEnterSelection={handleEnterSelection}
       />
 
       <ChatInput
@@ -220,6 +277,16 @@ function ChatContainerInner({ room, messages, loading, loadingMore, hasMore, onL
             setSnoozeBotId(null)
             setSnoozeSourceId(null)
           }}
+        />
+      )}
+
+      {showBulkDeleteConfirm && (
+        <ClearMessagesModal
+          title={`Hapus ${selectedIds.size} Catatan`}
+          description="Catatan yang dipilih akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?"
+          confirmLabel="Hapus"
+          onConfirm={handleBulkDeleteConfirm}
+          onClose={() => setShowBulkDeleteConfirm(false)}
         />
       )}
     </div>

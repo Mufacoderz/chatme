@@ -5,7 +5,7 @@
 "use client"
 
 import { useState } from "react"
-import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX } from "react-icons/fi"
+import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX, FiCheckSquare } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
 type Props = {
@@ -23,12 +23,13 @@ type Props = {
   onMarkReminded: () => void
   onTogglePin: () => void
   onDelete: () => void
+  onSelect: () => void
   onClose: () => void
 }
 
 export default function ContextMenu({
   x, y, isChecklist = false, taskStatus, isPinned, hasActiveReminder, canEditByTime,
-  onCopy, onEdit, onSetStatus, onRemind, onMarkReminded, onTogglePin, onDelete, onClose
+  onCopy, onEdit, onSetStatus, onRemind, onMarkReminded, onTogglePin, onDelete, onSelect, onClose
 }: Props) {
 
   // Ghost click dari touch (synthetic click yang dikirim browser setelah
@@ -47,6 +48,12 @@ export default function ContextMenu({
   const safeX = Math.max(8, Math.min(x - 100, window.innerWidth - 210))
 
   const items = [
+    ...(!isChecklist ? [{
+      icon: <FiCheckSquare size={15} />,
+      label: "Pilih",
+      onClick: onSelect,
+      danger: false,
+    }] : []),
     ...(!isChecklist ? [{
       icon: <FiCopy size={15} />,
       label: "Salin",

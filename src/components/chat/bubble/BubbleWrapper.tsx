@@ -18,6 +18,10 @@ type Props = {
   isNew?: boolean
   searchQuery?: string
   onDeleteMessage?: (message: ChatMessage) => void
+  selectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelect?: (messageId: string) => void
+  onEnterSelection?: (messageId: string) => void
 }
 
 const BubbleWrapper = memo(function BubbleWrapper({
@@ -26,6 +30,10 @@ const BubbleWrapper = memo(function BubbleWrapper({
   isNew = false,
   searchQuery = "",
   onDeleteMessage,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
+  onEnterSelection,
 }: Props) {
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
   const [showRemind, setShowRemind] = useState(false)
@@ -43,6 +51,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
   function handleTouchStart(e: React.TouchEvent) {
+    if (selectionMode) return
     const touch = e.touches[0]
     touchStartPos.current = { x: touch.clientX, y: touch.clientY }
     touchTimer.current = setTimeout(() => openMenu(touch.clientX, touch.clientY), 500)
@@ -63,8 +72,14 @@ const BubbleWrapper = memo(function BubbleWrapper({
   }
 
   function handleContextMenu(e: React.MouseEvent) {
+    if (selectionMode) return
     e.preventDefault()
     openMenu(e.clientX, e.clientY)
+  }
+
+  function handleBubbleClick() {
+    if (!selectionMode) return
+    onToggleSelect?.(message.id)
   }
 
   const handleCopy = useCallback(() => {
@@ -124,6 +139,8 @@ const BubbleWrapper = memo(function BubbleWrapper({
             message={message}
             isNew={isNew}
             searchQuery={searchQuery}
+            isSelected={isSelected}
+            onClick={handleBubbleClick}
             onContextMenu={handleContextMenu}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
@@ -148,6 +165,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
           onMarkReminded={handleMarkReminded}
           onTogglePin={handleTogglePin}
           onDelete={() => { setMenuPos(null); setShowDelete(true) }}
+          onSelect={() => onEnterSelection?.(message.id)}
           onClose={() => setMenuPos(null)}
         />
       )}

@@ -10,6 +10,8 @@ type Props = {
   message: Message
   isNew?: boolean
   searchQuery?: string
+  isSelected?: boolean
+  onClick?: () => void
   onContextMenu?: (e: React.MouseEvent) => void
   onTouchStart?: (e: React.TouchEvent) => void
   onTouchEnd?: (e: React.TouchEvent) => void
@@ -20,6 +22,8 @@ const MessageBubble = memo(function MessageBubble({
   message,
   isNew = false,
   searchQuery = "",
+  isSelected = false,
+  onClick,
   onContextMenu,
   onTouchStart,
   onTouchEnd,
@@ -71,11 +75,14 @@ const MessageBubble = memo(function MessageBubble({
       className={`flex flex-col items-end${isNew ? " animate-bubble-user" : ""}`}
     >
       <div
+        onClick={onClick}
         onContextMenu={onContextMenu}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
         onTouchMove={onTouchMove}
-        className="neo-card relative max-w-[82%] rotate-[0.4deg] rounded-xl rounded-br-sm bg-[var(--accent)] px-4 py-2.5"
+        className={`neo-card relative max-w-[82%] rotate-[0.4deg] rounded-xl rounded-br-sm px-4 py-2.5 transition-colors ${
+          isSelected ? "bg-[var(--sage)]" : "bg-[var(--accent)]"
+        }`}
         style={{ opacity: message.taskStatus !== "PENDING" ? 0.78 : 1 }}
       >
         {(message.isPinned || hasActiveReminder || message.taskStatus !== "PENDING") && (
@@ -112,12 +119,21 @@ const MessageBubble = memo(function MessageBubble({
           </div>
         )}
 
-        <div className="text-sm leading-relaxed text-[var(--accent-ink)] select-none space-y-1">
+        {isSelected && (
+          <div
+            className="absolute -left-2 -top-2 flex h-6 w-6 -rotate-6 items-center justify-center rounded-full border-2 border-[var(--neo-line)] shadow-[2px_2px_0_var(--neo-shadow)]"
+            style={{ background: "var(--sage)" }}
+          >
+            <FiCheck size={13} strokeWidth={3} className="text-[var(--text)]" />
+          </div>
+        )}
+
+        <div className={`text-sm leading-relaxed select-none space-y-1 ${isSelected ? "text-[var(--text)]" : "text-[var(--accent-ink)]"}`}>
           {parseFormattedText(message.text, searchQuery)}
         </div>
 
         {hasActiveReminder && message.remindAt && (
-          <span className="mt-1.5 block text-[10px] font-semibold text-[var(--accent-ink)] opacity-70">
+          <span className={`mt-1.5 block text-[10px] font-semibold opacity-70 ${isSelected ? "text-[var(--text)]" : "text-[var(--accent-ink)]"}`}>
             Ingatkan{" "}
             {new Date(message.remindAt).toLocaleDateString("id-ID", {
               day: "numeric",
