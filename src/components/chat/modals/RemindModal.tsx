@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { FiBell, FiX } from "react-icons/fi"
 import { trpc } from "@/lib/trpc"
-import { ModalPortal } from "@/components/ui/ModalPortal"
+import { BottomSheet } from "@/components/ui/BottomSheet"
 
 type Props = {
   messageId: string
@@ -16,16 +16,6 @@ export default function RemindModal({ messageId, messageText, onClose, onSave }:
   const utils = trpc.useUtils()
   const [datetime, setDatetime] = useState("")
   const [loading, setLoading] = useState(false)
-
-  // Ghost click dari touch bisa nimpa backdrop sesaat setelah modal mount.
-  const [openedAt] = useState(() => Date.now())
-  const GHOST_CLICK_GUARD_MS = 350
-
-  function handleBackdropClick(e: React.MouseEvent) {
-    if (Date.now() - openedAt < GHOST_CLICK_GUARD_MS) return
-    if (e.target !== e.currentTarget) return
-    onClose()
-  }
 
   async function handleSave() {
     if (!datetime) return
@@ -49,53 +39,41 @@ export default function RemindModal({ messageId, messageText, onClose, onSave }:
   }
 
   return (
-    <ModalPortal>
-      <div
-        className="fixed inset-0 z-50 flex items-end justify-center"
-        style={{ background: "#00000070", backdropFilter: "blur(4px)" }}
-        onClick={handleBackdropClick}
-      >
-      <div
-        className="w-full max-w-md rounded-t-3xl p-6 pb-10 bg-[var(--surface)] border-t border-[var(--border2)]"
-      >
-        <div className="w-9 h-1 rounded-full mx-auto mb-5 bg-[var(--border2)]" />
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FiBell size={16} className="text-[var(--accent)]" />
-            <p className="font-semibold font-sora text-sm text-[var(--text)]">Set Pengingat</p>
-          </div>
-          <button onClick={onClose} className="text-[var(--text3)]">
-            <FiX size={18} />
-          </button>
+    <BottomSheet onClose={onClose}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <FiBell size={16} className="text-[var(--accent)]" />
+          <p className="font-semibold font-sora text-sm text-[var(--text)]">Set Pengingat</p>
         </div>
-
-        <div
-          className="rounded-xl px-4 py-3 mb-5 border text-sm text-[var(--text2)]"
-          style={{ background: "var(--surface2)", borderColor: "var(--border2)" }}
-        >
-          {messageText.length > 60 ? messageText.slice(0, 60) + "..." : messageText}
-        </div>
-
-        <label className="text-xs mb-1.5 block text-[var(--text3)]">Ingatkan pada</label>
-        <input
-          type="datetime-local"
-          className="w-full rounded-xl px-4 py-3 text-sm outline-none border mb-5 transition-colors bg-[var(--surface2)] text-[var(--text)]"
-          style={{ borderColor: datetime ? "var(--accent)" : "var(--border2)" }}
-          value={datetime}
-          onChange={(e) => setDatetime(e.target.value)}
-        />
-
-        <button
-          onClick={handleSave}
-          disabled={!datetime || loading}
-          className="w-full py-3 rounded-xl font-semibold text-sm font-sora transition-opacity bg-[var(--accent)] text-[var(--accent-ink)]"
-          style={{ opacity: !datetime || loading ? 0.5 : 1 }}
-        >
-          {loading ? "Menyimpan..." : "Simpan Pengingat"}
+        <button onClick={onClose} className="text-[var(--text3)]">
+          <FiX size={18} />
         </button>
-        </div>
       </div>
-    </ModalPortal>
+
+      <div
+        className="rounded-xl px-4 py-3 mb-5 border text-sm text-[var(--text2)]"
+        style={{ background: "var(--surface2)", borderColor: "var(--border2)" }}
+      >
+        {messageText.length > 60 ? messageText.slice(0, 60) + "..." : messageText}
+      </div>
+
+      <label className="text-xs mb-1.5 block text-[var(--text3)]">Ingatkan pada</label>
+      <input
+        type="datetime-local"
+        className="w-full rounded-xl px-4 py-3 text-sm outline-none border mb-5 transition-colors bg-[var(--surface2)] text-[var(--text)]"
+        style={{ borderColor: datetime ? "var(--accent)" : "var(--border2)" }}
+        value={datetime}
+        onChange={(e) => setDatetime(e.target.value)}
+      />
+
+      <button
+        onClick={handleSave}
+        disabled={!datetime || loading}
+        className="w-full py-3 rounded-xl font-semibold text-sm font-sora transition-opacity bg-[var(--accent)] text-[var(--accent-ink)]"
+        style={{ opacity: !datetime || loading ? 0.5 : 1 }}
+      >
+        {loading ? "Menyimpan..." : "Simpan Pengingat"}
+      </button>
+    </BottomSheet>
   )
 }
