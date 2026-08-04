@@ -4,7 +4,7 @@ import { useState, memo } from "react"
 import { FiCheck, FiEdit2, FiList, FiPlus, FiTrash2, FiX } from "react-icons/fi"
 import { useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
-import { ModalPortal } from "@/components/ui/ModalPortal"
+import { BottomSheet } from "@/components/ui/BottomSheet"
 import { useToggleChecklistItemOptimistic, updateMessagesCache, getMessagesKey } from "@/hooks/useMessages"
 import type { ChatMessage } from "@/types/chat"
 
@@ -160,12 +160,7 @@ const ChecklistBubble = memo(function ChecklistBubble({
       <span className="mt-1 pr-1 text-[10px] tabular-nums text-[var(--text3)]">{time}</span>
 
       {editing && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-[#10201999] p-3 sm:items-center"
-            onClick={(event) => event.target === event.currentTarget && setEditing(false)}
-          >
-          <div className="neo-panel w-full max-w-md rounded-2xl bg-[var(--surface)] p-5">
+        <BottomSheet onClose={() => setEditing(false)}>
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-sora text-base font-bold">Edit Checklist</h2>
               <button
@@ -230,9 +225,7 @@ const ChecklistBubble = memo(function ChecklistBubble({
             >
               {saving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
-          </div>
-        </div>
-        </ModalPortal>
+        </BottomSheet>
       )}
     </div>
   )

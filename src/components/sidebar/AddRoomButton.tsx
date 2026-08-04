@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { FiPlus, FiX } from "react-icons/fi"
-import { ModalPortal } from "@/components/ui/ModalPortal"
+import { BottomSheet } from "@/components/ui/BottomSheet"
 import { useCreateRoom } from "@/hooks/useRooms"
 import { ROOM_ICONS, DEFAULT_ROOM_ICON } from "@/lib/roomIcons"
 
@@ -41,15 +41,7 @@ export default function AddRoomButton() {
       </button>
 
       {open && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center"
-            style={{ background: "#00000070", backdropFilter: "blur(4px)" }}
-            onClick={(e) => e.target === e.currentTarget && handleClose()}
-          >
-          <div className="neo-panel w-[calc(100%-24px)] max-w-md rounded-2xl bg-[var(--surface)] p-6 pb-8">
-            <div className="w-12 h-2 rotate-1 rounded-md mx-auto mb-5 bg-[var(--accent)] border-2 border-[var(--neo-line)]" />
-
+        <BottomSheet onClose={handleClose}>
             <div className="flex items-center justify-between mb-5">
               <p className="font-semibold font-sora text-base text-[var(--text)]">Buat Room Baru</p>
               <button onClick={handleClose} className="text-[var(--text3)] hover:text-[var(--text)] transition-colors">
@@ -106,9 +98,7 @@ export default function AddRoomButton() {
             >
               {loading ? "Membuat..." : "Buat Room"}
             </button>
-          </div>
-        </div>
-        </ModalPortal>
+        </BottomSheet>
       )}
     </>
   )
