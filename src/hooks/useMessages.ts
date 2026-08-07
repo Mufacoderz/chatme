@@ -240,7 +240,9 @@ export function useSendMessage(roomId: string) {
         text: realMessage.text,
         createdAt: new Date(realMessage.createdAt),
       })
-      adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
+      if (realMessage.type !== MessageType.CHECKLIST) {
+        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
+      }
       broadcastInvalidate(roomsKey)
     },
     onError: (_err, _input, context) => {
@@ -310,7 +312,7 @@ export function useDeleteMessage(roomId: string) {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
       msgs.filter((m) => m.id !== messageId)
     )
-    if (removed && removed.taskStatus === "PENDING") {
+    if (removed && removed.taskStatus === "PENDING" && removed.type !== MessageType.CHECKLIST) {
       adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
     }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
@@ -319,7 +321,7 @@ export function useDeleteMessage(roomId: string) {
 
   const restoreToView = useCallback((message: ChatMessage) => {
     updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => [...msgs, message])
-    if (message.taskStatus === "PENDING") {
+    if (message.taskStatus === "PENDING" && message.type !== MessageType.CHECKLIST) {
       adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, +1)
     }
     syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
@@ -488,7 +490,7 @@ export function useMarkRemindedAndDone(roomId: string) {
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) => (m.id === id ? { ...m, isRemindDone: true, taskStatus: "DONE" } : m))
       )
-      if (prevMessage && prevMessage.taskStatus === "PENDING") {
+      if (prevMessage && prevMessage.taskStatus === "PENDING" && prevMessage.type !== MessageType.CHECKLIST) {
         adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, -1)
       }
       return { previous }
@@ -507,7 +509,6 @@ export function useMarkRemindedAndDone(roomId: string) {
 export function useChecklistToggle(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
-  const roomsKey = getRoomsKey()
 
   return trpc.message.updateChecklist.useMutation({
     onMutate: async ({ id, items }) => {
@@ -515,8 +516,6 @@ export function useChecklistToggle(roomId: string) {
       const previous = queryClient.getQueryData(messagesKey)
       const allDone = items.every((i) => i.isDone)
       const nextStatus = allDone ? "DONE" : "PENDING"
-      const prevMessage = getMessagesFromCache(queryClient, messagesKey).find((m) => m.id === id)
-      const prevStatus = prevMessage?.taskStatus ?? "PENDING"
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
         msgs.map((m) =>
           m.id === id
@@ -527,9 +526,7 @@ export function useChecklistToggle(roomId: string) {
             : m
         )
       )
-      if (prevStatus !== nextStatus) {
-        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, nextStatus === "DONE" ? -1 : +1)
-      }
+      // checklist gak dihitung di badge "belum selesai" room list.
       return { previous }
     },
     onSuccess: (updated) => {
@@ -559,7 +556,6 @@ export function useToggleChecklistItem() {
 export function useToggleChecklistItemOptimistic(roomId: string) {
   const queryClient = useQueryClient()
   const messagesKey = getMessagesKey(roomId)
-  const roomsKey = getRoomsKey()
   const toggleItem = useToggleChecklistItem()
 
   const optimisticToggle = useCallback(
@@ -567,7 +563,6 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
       const nextItems = prevItems.map((item) =>
         item.id === itemId ? { ...item, isDone } : item
       )
-      const prevStatus = prevItems.every((item) => item.isDone) ? "DONE" : "PENDING"
       const nextStatus = nextItems.every((item) => item.isDone) ? "DONE" : "PENDING"
 
       updateMessagesCache(queryClient, messagesKey, (msgs) =>
@@ -578,9 +573,7 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
         )
       )
 
-      if (prevStatus !== nextStatus) {
-        adjustRoomUnfinishedCount(queryClient, roomsKey, roomId, nextStatus === "DONE" ? -1 : +1)
-      }
+      // checklist gak dihitung di badge "belum selesai" room list.
 
       toggleItem.mutate(
         { id: itemId, isDone },
@@ -597,7 +590,7 @@ export function useToggleChecklistItemOptimistic(roomId: string) {
         }
       )
     },
-    [queryClient, messagesKey, roomsKey, roomId, toggleItem]
+    [queryClient, messagesKey, toggleItem]
   )
 
   return { optimisticToggle, toggleItem }
