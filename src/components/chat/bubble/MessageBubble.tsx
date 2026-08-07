@@ -83,7 +83,7 @@ const MessageBubble = memo(function MessageBubble({
         className={`neo-card relative max-w-[82%] rotate-[0.4deg] rounded-xl rounded-br-sm px-4 py-2.5 transition-colors ${
           isSelected ? "bg-[var(--sage)]" : "bg-[var(--accent)]"
         }`}
-        style={{ opacity: message.taskStatus !== "PENDING" ? 0.78 : 1 }}
+        style={{ opacity: isNew ? 0.6 : message.taskStatus !== "PENDING" ? 0.78 : 1 }}
       >
         {(message.isPinned || hasActiveReminder || message.taskStatus !== "PENDING") && (
           <div className="absolute -right-2 -top-2 flex items-center gap-1">

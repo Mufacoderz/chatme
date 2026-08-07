@@ -51,7 +51,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
   function handleTouchStart(e: React.TouchEvent) {
-    if (selectionMode) return
+    if (selectionMode || isNew) return
     const touch = e.touches[0]
     touchStartPos.current = { x: touch.clientX, y: touch.clientY }
     touchTimer.current = setTimeout(() => openMenu(touch.clientX, touch.clientY), 500)
@@ -72,12 +72,13 @@ const BubbleWrapper = memo(function BubbleWrapper({
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    if (selectionMode) return
+    if (selectionMode || isNew) return
     e.preventDefault()
     openMenu(e.clientX, e.clientY)
   }
 
   function handleBubbleClick() {
+    if (isNew) return
     if (!selectionMode) return
     onToggleSelect?.(message.id)
   }
