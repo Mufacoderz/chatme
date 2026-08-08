@@ -3,7 +3,7 @@
 import { useEffect, useState, memo } from "react"
 import { Message } from "@prisma/client"
 import { IoCheckmarkDone } from "react-icons/io5"
-import { FiBell, FiBookmark, FiCheck, FiX } from "react-icons/fi"
+import { FiBell, FiBookmark, FiCheck, FiClock, FiX } from "react-icons/fi"
 import { parseFormattedText } from "@/lib/messageFormat"
 
 type Props = {
@@ -154,14 +154,18 @@ const MessageBubble = memo(function MessageBubble({
         <span className="text-[10px] tabular-nums text-[var(--text3)]">
           {time}
         </span>
-        <IoCheckmarkDone
-          size={16}
-          className={`transition-all ${
-            message.taskStatus === "DONE" ? "text-[var(--success)]" :
-            message.taskStatus === "NOT_DONE" ? "text-[var(--coral)]" :
-            "text-[var(--text3)]"
-          }`}
-        />
+        {isNew ? (
+          <FiClock size={12} className="text-[var(--text3)]" />
+        ) : (
+          <IoCheckmarkDone
+            size={16}
+            className={`transition-all ${
+              message.taskStatus === "DONE" ? "text-[var(--success)]" :
+              message.taskStatus === "NOT_DONE" ? "text-[var(--coral)]" :
+              "text-[var(--text3)]"
+            }`}
+          />
+        )}
       </div>
     </div>
   )
