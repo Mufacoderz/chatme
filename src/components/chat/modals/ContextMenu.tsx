@@ -4,7 +4,7 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useLayoutEffect, useState, useRef } from "react"
 import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX, FiCheckSquare } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
 
@@ -56,9 +56,48 @@ export default function ContextMenu({
     onClose()
   }
 
-  // pastiin menu tidak keluar dari viewport
-  const safeY = Math.min(y, window.innerHeight - 280)
-  const safeX = Math.max(8, Math.min(x - 100, window.innerWidth - 210))
+  // Posisi menu dihitung dari UKURAN ASLI-nya (bukan angka fix kayak
+  // sebelumnya), soalnya jumlah item context menu beda-beda tergantung
+  // kondisi (checklist vs teks, ada reminder aktif atau nggak, dst) jadi
+  // tingginya gak konstan. Diukur sesudah mount, lalu di-clamp/flip biar
+  // selalu ada di dalam viewport.
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: y, left: x, maxHeight: 9999, ready: false })
+
+  useLayoutEffect(() => {
+    const el = menuRef.current
+    if (!el) return
+
+    const margin = 8
+    const { offsetWidth, offsetHeight } = el
+
+    let left = x - 100
+    left = Math.max(margin, Math.min(left, window.innerWidth - offsetWidth - margin))
+
+    const spaceBelow = window.innerHeight - y - margin
+    const spaceAbove = y - margin
+    let top: number
+
+    if (offsetHeight <= spaceBelow) {
+      // cukup ruang di bawah titik klik/tap
+      top = y
+    } else if (offsetHeight <= spaceAbove) {
+      // gak cukup di bawah, tapi cukup kalau dibuka ke atas
+      top = y - offsetHeight
+    } else {
+      // dua-duanya gak cukup (menu lebih tinggi dari layar) — nempel ke
+      // sisi yang ruangnya lebih gede, sisanya bisa discroll
+      top = spaceBelow >= spaceAbove ? y : margin
+    }
+    top = Math.max(margin, Math.min(top, window.innerHeight - margin))
+
+    setPos({
+      top,
+      left,
+      maxHeight: window.innerHeight - margin * 2,
+      ready: true,
+    })
+  }, [x, y])
 
   const items = [
     ...(!isChecklist ? [{
@@ -117,10 +156,13 @@ export default function ContextMenu({
         onClick={handleBackdropClick}
       >
         <div
-          className="neo-panel fixed z-50 min-w-[200px] overflow-hidden rounded-xl bg-[var(--surface2)]"
+          ref={menuRef}
+          className="neo-panel fixed z-50 min-w-[200px] overflow-y-auto rounded-xl bg-[var(--surface2)]"
           style={{
-            top: safeY,
-            left: safeX,
+            top: pos.top,
+            left: pos.left,
+            maxHeight: pos.maxHeight,
+            visibility: pos.ready ? "visible" : "hidden",
             animation: "menuPop 0.15s ease",
           }}
           onClick={(e) => e.stopPropagation()}
