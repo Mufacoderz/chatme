@@ -6,6 +6,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { queryClient, idbPersister } from "@/lib/queryClient"
 import { trpc } from "@/lib/trpc"
 import { initBroadcastListener } from "@/lib/broadcastSync"
+import OutboxProcessor from "@/components/system/OutboxProcessor"
 import superjson from 'superjson';
 
 
@@ -42,6 +43,7 @@ const [trpcClient] = useState(() =>
             // growth on long chat histories. If re-enabling, test carefully for
             // memory/storage leaks — see update.md §D2.
             shouldDehydrateQuery: (query) => {
+                if (query.queryKey[0] === "outbox") return true
                 const key = query.queryKey[0]
                 if (!Array.isArray(key)) return false
                 if (key[0] === "room") return true
@@ -51,6 +53,7 @@ const [trpcClient] = useState(() =>
             },
           }}
         >
+          <OutboxProcessor />
           {children}
         </PersistQueryClientProvider>
     </trpc.Provider>
