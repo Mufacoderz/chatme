@@ -148,6 +148,7 @@ const BubbleWrapper = memo(function BubbleWrapper({
           <MessageBubble
             message={message}
             isNew={isNew}
+            sendFailed={outboxItem?.status === "failed"}
             searchQuery={searchQuery}
             isSelected={isSelected}
             onClick={handleBubbleClick}

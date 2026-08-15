@@ -3,12 +3,13 @@
 import { useEffect, useState, memo } from "react"
 import { Message } from "@prisma/client"
 import { IoCheckmarkDone } from "react-icons/io5"
-import { FiBell, FiBookmark, FiCheck, FiClock, FiX } from "react-icons/fi"
+import { FiBell, FiBookmark, FiCheck, FiClock, FiX, FiAlertCircle } from "react-icons/fi"
 import { parseFormattedText } from "@/lib/messageFormat"
 
 type Props = {
   message: Message
   isNew?: boolean
+  sendFailed?: boolean
   searchQuery?: string
   isSelected?: boolean
   onClick?: () => void
@@ -21,6 +22,7 @@ type Props = {
 const MessageBubble = memo(function MessageBubble({
   message,
   isNew = false,
+  sendFailed = false,
   searchQuery = "",
   isSelected = false,
   onClick,
@@ -155,7 +157,11 @@ const MessageBubble = memo(function MessageBubble({
           {time}
         </span>
         {isNew ? (
-          <FiClock size={12} className="text-[var(--text3)]" />
+          sendFailed ? (
+            <FiAlertCircle size={12} className="text-[var(--coral)]" />
+          ) : (
+            <FiClock size={12} className="text-[var(--text3)]" />
+          )
         ) : (
           <IoCheckmarkDone
             size={16}
