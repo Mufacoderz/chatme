@@ -6,6 +6,8 @@ import { trpc } from "@/lib/trpc"
 import { getQueryKey } from "@trpc/react-query"
 import { broadcastInvalidate } from "@/lib/broadcastSync"
 import { MessageType } from "@prisma/client"
+import { addOutboxItem, RATE_LIMIT_BACKOFF_BASE_MS } from "@/lib/outbox"
+import { classifySendError } from "@/lib/sendErrorClassifier"
 import type { ChatMessage } from "@/types/chat"
 import type { RoomData } from "./useRooms"
 
@@ -196,6 +198,7 @@ export function useSendMessage(roomId: string) {
   const roomsKey = getRoomsKey()
 
   return trpc.message.send.useMutation({
+    networkMode: "always",
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -245,10 +248,41 @@ export function useSendMessage(roomId: string) {
       }
       broadcastInvalidate(roomsKey)
     },
-    onError: (_err, _input, context) => {
-      updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
-        msgs.filter((m) => m.id !== context?.tempId)
-      )
+    onError: (err, input, context) => {
+      if (!context?.tempId) return
+
+      if (input.type === MessageType.CHECKLIST) {
+        updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
+          msgs.filter((m) => m.id !== context.tempId)
+        )
+        return
+      }
+
+      const kind = classifySendError(err)
+      const base = {
+        tempId: context.tempId,
+        roomId: input.roomId,
+        text: input.text,
+        type: "TEXT" as const,
+        createdAt: new Date().toISOString(),
+      }
+
+      if (kind === "offline") {
+        addOutboxItem(queryClient, { ...base, status: "pending", retryCount: 0, nextRetryAt: null, lastError: null })
+        return
+      }
+      if (kind === "rate-limit") {
+        addOutboxItem(queryClient, {
+          ...base, status: "pending", retryCount: 1,
+          nextRetryAt: new Date(Date.now() + RATE_LIMIT_BACKOFF_BASE_MS).toISOString(),
+          lastError: null,
+        })
+        return
+      }
+      addOutboxItem(queryClient, {
+        ...base, status: "failed", retryCount: 0, nextRetryAt: null,
+        lastError: err instanceof Error ? err.message : "Gagal mengirim",
+      })
     },
   })
 }
