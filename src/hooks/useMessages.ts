@@ -1,12 +1,20 @@
 "use client"
 
-import { useCallback } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useCallback, useEffect } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import { getQueryKey } from "@trpc/react-query"
 import { broadcastInvalidate } from "@/lib/broadcastSync"
 import { MessageType } from "@prisma/client"
-import { addOutboxItem, RATE_LIMIT_BACKOFF_BASE_MS } from "@/lib/outbox"
+import {
+  addOutboxItem,
+  updateOutboxItem,
+  removeOutboxItem,
+  OUTBOX_KEY,
+  MAX_RATE_LIMIT_RETRIES,
+  RATE_LIMIT_BACKOFF_BASE_MS,
+  type OutboxItem,
+} from "@/lib/outbox"
 import { classifySendError } from "@/lib/sendErrorClassifier"
 import type { ChatMessage } from "@/types/chat"
 import type { RoomData } from "./useRooms"
@@ -285,6 +293,104 @@ export function useSendMessage(roomId: string) {
       })
     },
   })
+}
+
+// ── Outbox ───────────────────────────────────────────────────────────────
+
+export function useOutboxQuery() {
+  return useQuery<OutboxItem[]>({
+    queryKey: OUTBOX_KEY,
+    queryFn: () => [],
+    initialData: [],
+    staleTime: Infinity,
+    gcTime: Infinity,
+  })
+}
+
+function buildTempTextMessage(tempId: string, roomId: string, text: string, now: Date): ChatMessage {
+  return {
+    tempId, id: tempId, text,
+    type: MessageType.TEXT, taskStatus: "PENDING",
+    isPinned: false, isBot: false,
+    remindAt: null, remindSnoozeAt: null, remindNotifiedAt: null, isRemindDone: false,
+    sourceMessageId: null, roomId, userId: "",
+    createdAt: now, updatedAt: now, editedAt: null,
+    checklistItems: [],
+  }
+}
+
+export function useReplayOutboxIntoRoom(roomId: string, ready: boolean) {
+  const queryClient = useQueryClient()
+  const messagesKey = getMessagesKey(roomId)
+  const { data: outbox } = useOutboxQuery()
+
+  useEffect(() => {
+    if (!ready) return
+    const pendingForRoom = (outbox ?? []).filter((it) => it.roomId === roomId)
+    if (pendingForRoom.length === 0) return
+
+    const currentIds = new Set(getMessagesFromCache(queryClient, messagesKey).map((m) => m.id))
+    const missing = pendingForRoom.filter((it) => !currentIds.has(it.tempId))
+    if (missing.length === 0) return
+
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => [
+      ...msgs,
+      ...missing.map((it) => buildTempTextMessage(it.tempId, roomId, it.text, new Date(it.createdAt))),
+    ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, roomId, outbox, queryClient])
+}
+
+export async function attemptSendOutboxItem(
+  utils: ReturnType<typeof trpc.useUtils>,
+  queryClient: ReturnType<typeof useQueryClient>,
+  item: OutboxItem
+) {
+  const messagesKey = getMessagesKey(item.roomId)
+  const roomsKey = getRoomsKey()
+
+  updateOutboxItem(queryClient, item.tempId, { status: "sending" })
+
+  try {
+    const real = await utils.client.message.send.mutate({
+      roomId: item.roomId, text: item.text, type: MessageType.TEXT,
+    })
+
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) =>
+      msgs.map((m) => (m.id === item.tempId ? { ...real, tempId: item.tempId } : m))
+    )
+    updateSidebarPreview(queryClient, roomsKey, item.roomId, {
+      text: real.text, createdAt: new Date(real.createdAt),
+    })
+    adjustRoomUnfinishedCount(queryClient, roomsKey, item.roomId, +1)
+    broadcastInvalidate(roomsKey)
+
+    removeOutboxItem(queryClient, item.tempId)
+  } catch (err) {
+    const kind = classifySendError(err)
+
+    if (kind === "offline") {
+      updateOutboxItem(queryClient, item.tempId, { status: "pending" })
+      return
+    }
+    if (kind === "rate-limit") {
+      const nextCount = item.retryCount + 1
+      if (nextCount > MAX_RATE_LIMIT_RETRIES) {
+        updateOutboxItem(queryClient, item.tempId, {
+          status: "failed", retryCount: nextCount, lastError: "Terlalu banyak percobaan",
+        })
+        return
+      }
+      updateOutboxItem(queryClient, item.tempId, {
+        status: "pending", retryCount: nextCount,
+        nextRetryAt: new Date(Date.now() + RATE_LIMIT_BACKOFF_BASE_MS * 2 ** (nextCount - 1)).toISOString(),
+      })
+      return
+    }
+    updateOutboxItem(queryClient, item.tempId, {
+      status: "failed", lastError: err instanceof Error ? err.message : "Gagal mengirim",
+    })
+  }
 }
 
 // ── Edit message ────────────────────────────────────────────────────────
