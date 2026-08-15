@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useMessagesQuery } from "@/hooks/useMessages"
+import { useMessagesQuery, useReplayOutboxIntoRoom } from "@/hooks/useMessages"
 import { useRoom } from "@/hooks/useRoom"
 import ChatContainer from "./ChatContainer"
 
@@ -14,6 +14,8 @@ export default function RoomWrapper({ roomId }: Props) {
   const router = useRouter()
   const { data: room, error: roomError } = useRoom(roomId)
   const { data: messages = [], fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMessagesQuery(roomId)
+
+  useReplayOutboxIntoRoom(roomId, !isLoading)
 
   useEffect(() => {
     if (roomError) router.replace("/")
