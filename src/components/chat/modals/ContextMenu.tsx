@@ -5,8 +5,9 @@
 "use client"
 
 import { useLayoutEffect, useState, useRef } from "react"
-import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX, FiCheckSquare } from "react-icons/fi"
+import { FiCopy, FiCheck, FiBell, FiBookmark, FiTrash2, FiCheckCircle, FiEdit2, FiX, FiCheckSquare, FiRefreshCw } from "react-icons/fi"
 import { ModalPortal } from "@/components/ui/ModalPortal"
+import type { OutboxItem } from "@/lib/outbox"
 
 type Props = {
   x: number
@@ -16,6 +17,9 @@ type Props = {
   isPinned: boolean
   hasActiveReminder: boolean
   canEditByTime: boolean
+  pendingOutbox?: OutboxItem
+  onCancelSend?: () => void
+  onRetrySend?: () => void
   onCopy: () => void
   onEdit: () => void
   onSetStatus: (status: "PENDING" | "DONE" | "NOT_DONE") => void
@@ -29,6 +33,7 @@ type Props = {
 
 export default function ContextMenu({
   x, y, isChecklist = false, taskStatus, isPinned, hasActiveReminder, canEditByTime,
+  pendingOutbox, onCancelSend, onRetrySend,
   onCopy, onEdit, onSetStatus, onRemind, onMarkReminded, onTogglePin, onDelete, onSelect, onClose
 }: Props) {
 
@@ -99,7 +104,14 @@ export default function ContextMenu({
     })
   }, [x, y])
 
-  const items = [
+  const items = pendingOutbox
+    ? [
+        ...(pendingOutbox.status === "failed" ? [{
+          icon: <FiRefreshCw size={15} />, label: "Coba Lagi", onClick: onRetrySend!, danger: false,
+        }] : []),
+        { icon: <FiTrash2 size={15} />, label: "Batalkan Pengiriman", onClick: onCancelSend!, danger: true },
+      ]
+    : [
     ...(!isChecklist ? [{
       icon: <FiCheckSquare size={15} />,
       label: "Pilih",
@@ -146,7 +158,7 @@ export default function ContextMenu({
       onClick: onDelete,
       danger: true,
     },
-  ]
+    ]
 
   return (
     <ModalPortal>

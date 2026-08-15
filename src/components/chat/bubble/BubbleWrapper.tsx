@@ -9,6 +9,7 @@ import MessageBubble from "./MessageBubble"
 import ChecklistBubble from "./ChecklistBubble"
 import { MessageType } from "@prisma/client"
 import { useMessageActions } from "@/hooks/useMessageActions"
+import { useOutboxQuery, useCancelOutboxMessage, useRetryOutboxMessage } from "@/hooks/useMessages"
 import { EDIT_WINDOW_MS } from "@/lib/editWindow"
 import type { ChatMessage } from "@/types/chat"
 
@@ -45,13 +46,20 @@ const BubbleWrapper = memo(function BubbleWrapper({
 
   const { editMessage, togglePin, toggleDone, setReminder, markReminded, checklistToggle } = useMessageActions()
 
+  const { data: outbox = [] } = useOutboxQuery()
+  const outboxItem = isNew ? outbox.find((it) => it.tempId === message.id) : undefined
+  const isPendingOutboxMessage = Boolean(outboxItem)
+  const cancelOutboxMessage = useCancelOutboxMessage()
+  const retryOutboxMessage = useRetryOutboxMessage()
+
   // Jendela edit 24 jam rolling dari createdAt — sinkron sama enforce di server.
   const canEditByTime = Date.now() - new Date(message.createdAt).getTime() <= EDIT_WINDOW_MS
 
   function openMenu(x: number, y: number) { setMenuPos({ x, y }) }
 
   function handleTouchStart(e: React.TouchEvent) {
-    if (selectionMode || isNew) return
+    if (selectionMode) return
+    if (isNew && !isPendingOutboxMessage) return
     const touch = e.touches[0]
     touchStartPos.current = { x: touch.clientX, y: touch.clientY }
     touchTimer.current = setTimeout(() => openMenu(touch.clientX, touch.clientY), 500)
@@ -72,7 +80,8 @@ const BubbleWrapper = memo(function BubbleWrapper({
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    if (selectionMode || isNew) return
+    if (selectionMode) return
+    if (isNew && !isPendingOutboxMessage) return
     e.preventDefault()
     openMenu(e.clientX, e.clientY)
   }
@@ -167,6 +176,9 @@ const BubbleWrapper = memo(function BubbleWrapper({
           onTogglePin={handleTogglePin}
           onDelete={() => { setMenuPos(null); setShowDelete(true) }}
           onSelect={() => onEnterSelection?.(message.id)}
+          pendingOutbox={outboxItem}
+          onCancelSend={() => { setMenuPos(null); cancelOutboxMessage(message.id, roomId) }}
+          onRetrySend={() => { setMenuPos(null); retryOutboxMessage(message.id) }}
           onClose={() => setMenuPos(null)}
         />
       )}

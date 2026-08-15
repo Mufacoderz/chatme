@@ -393,6 +393,25 @@ export async function attemptSendOutboxItem(
   }
 }
 
+export function useCancelOutboxMessage() {
+  const queryClient = useQueryClient()
+  return useCallback((tempId: string, roomId: string) => {
+    const messagesKey = getMessagesKey(roomId)
+    const roomsKey = getRoomsKey()
+
+    removeOutboxItem(queryClient, tempId)
+    updateMessagesCacheFlatten(queryClient, messagesKey, (msgs) => msgs.filter((m) => m.id !== tempId))
+    syncSidebarPreview(queryClient, messagesKey, roomsKey, roomId)
+  }, [queryClient])
+}
+
+export function useRetryOutboxMessage() {
+  const queryClient = useQueryClient()
+  return useCallback((tempId: string) => {
+    updateOutboxItem(queryClient, tempId, { status: "pending", nextRetryAt: null })
+  }, [queryClient])
+}
+
 // ── Edit message ────────────────────────────────────────────────────────
 
 export function useEditMessage(roomId: string) {
