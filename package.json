@@ -47,7 +47,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
-    "devmap": "file:../Devmap Workspace/devmap/artifacts/devmap-0.1.0.tgz",
     "eslint": "^9",
     "eslint-config-next": "^16.2.12",
     "serwist": "^9.5.11",
