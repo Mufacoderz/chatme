@@ -68,6 +68,8 @@ model Message {
   remindSnoozeAt  DateTime?                  // waktu baru setelah ditunda
   remindNotifiedAt DateTime?                 // waktu terakhir notifikasi pengingat dikirim (dipakai untuk notif ulang)
   isRemindDone    Boolean   @default(false)  // reminder sudah di-resolve
+  reminderVersion Int       @default(0)      // dinaikkan tiap remindAt berubah; buat nolak job QStash basi
+  remindQstashId  String?                    // id message QStash yang lagi pending buat reminder ini (best-effort cancel)
   sourceMessageId String? @unique             // relasi ke pesan asli yang di-remind (unique mencegah duplikat bot reminder)
   userId          String
   roomId          String
