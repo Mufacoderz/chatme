@@ -3,6 +3,7 @@ import { MessageType } from "@prisma/client"
 import { router, protectedProcedure, rateLimitedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 import { EDIT_WINDOW_MS } from "@/lib/editWindow"
+import { rescheduleReminderJob, cancelReminderJob } from "@/lib/reminderScheduler"
 
 export const messageRouter = router({
   //list catatan per room (pagination)
@@ -186,11 +187,19 @@ export const messageRouter = router({
           remindAt: input.remindAt ? new Date(input.remindAt) : null,
           isRemindDone: false,
           remindNotifiedAt: null,
+          // Naikkan versi tiap kali remindAt berubah, biar job QStash lama (kalau ada)
+          // otomatis dianggap basi oleh endpoint /api/reminders/trigger.
+          reminderVersion: { increment: 1 },
         },
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
-      return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      const updated = await ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      // Batalkan job lama (kalau ada) & jadwalkan job baru sesuai remindAt terkini.
+      // Best-effort — gagal publish ke QStash gak nge-gagalin mutation ini.
+      await rescheduleReminderJob(ctx.prisma, updated)
+
+      return updated
     }),
 
   //tandai sudah diingatkan
@@ -203,7 +212,10 @@ export const messageRouter = router({
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
-      return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      const updated = await ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      await cancelReminderJob(ctx.prisma, updated)
+
+      return updated
     }),
 
   //tandai sudah diingatkan + selesai sekaligus
@@ -216,7 +228,10 @@ export const messageRouter = router({
       })
       if (result.count === 0) throw new TRPCError({ code: "NOT_FOUND" })
 
-      return ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      const updated = await ctx.prisma.message.findUniqueOrThrow({ where: { id: input.id } })
+      await cancelReminderJob(ctx.prisma, updated)
+
+      return updated
     }),
 
     //hapus smua catatan (note user, bot message dibiarkan)
@@ -257,6 +272,14 @@ export const messageRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      // Batalkan job reminder yang lagi pending (kalau ada) sebelum baris-nya hilang,
+      // biar gak ada job QStash nganggur nunjuk ke message yang udah kehapus.
+      const existing = await ctx.prisma.message.findFirst({
+        where: { id: input.id, userId: ctx.userId },
+        select: { id: true, remindQstashId: true },
+      })
+      if (existing) await cancelReminderJob(ctx.prisma, existing)
+
       await ctx.prisma.message.deleteMany({
         where: { id: input.id, userId: ctx.userId },
       })

@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { cancelReminderJob } from "@/lib/reminderScheduler"
 
 export async function POST(
   _req: Request,
@@ -12,14 +13,19 @@ export async function POST(
 
   const { id } = await params
 
-  const result = await prisma.message.updateMany({
+  const existing = await prisma.message.findFirst({
     where: { id, userId: session.user.id },
-    data: { isRemindDone: true, taskStatus: "DONE" },
+    select: { id: true, remindQstashId: true },
   })
-
-  if (result.count === 0) {
+  if (!existing) {
     return new Response("Not found", { status: 404 })
   }
+
+  await prisma.message.update({
+    where: { id: existing.id },
+    data: { isRemindDone: true, taskStatus: "DONE" },
+  })
+  await cancelReminderJob(prisma, existing)
 
   return Response.json({ success: true })
 }
