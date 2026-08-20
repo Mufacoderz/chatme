@@ -27,5 +27,12 @@ export async function POST(
   })
   await cancelReminderJob(prisma, existing)
 
+  // Sinkronkan bubble bot (card pengingat) di chat — biar ikut hilang,
+  // sama persis kayak kalau "Selesai" ditekan langsung dari card-nya.
+  await prisma.message.updateMany({
+    where: { sourceMessageId: existing.id, userId: session.user.id },
+    data: { isRemindDone: true },
+  })
+
   return Response.json({ success: true })
 }

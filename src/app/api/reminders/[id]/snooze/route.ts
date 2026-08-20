@@ -22,7 +22,6 @@ export async function POST(
       remindAt,
       isRemindDone: false,
       remindNotifiedAt: null,
-      // Naikkan versi biar job QStash lama (kalau ada) otomatis basi buat trigger endpoint.
       reminderVersion: { increment: 1 },
     },
   })
@@ -33,6 +32,14 @@ export async function POST(
 
   const updated = await prisma.message.findUniqueOrThrow({ where: { id } })
   await rescheduleReminderJob(prisma, updated)
+
+  // Sinkronkan bubble bot (card pengingat) di chat — tandai sudah
+  // diingatkan biar card lama ikut hilang, sama persis kayak kalau
+  // "Tunda" ditekan langsung dari card-nya.
+  await prisma.message.updateMany({
+    where: { sourceMessageId: id, userId: session.user.id },
+    data: { isRemindDone: true },
+  })
 
   return Response.json({ success: true, remindAt })
 }

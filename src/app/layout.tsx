@@ -54,6 +54,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
+      <head>
+        <meta name="google-site-verification" content="GBAKYaOoWG8RG-vNSPAfDngKaM3j0efT0Mv_dy91CSI" />
+      </head>
       <body className={`${geist.variable} ${sora.variable} antialiased`}>
         <Providers>
           {children}
