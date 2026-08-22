@@ -115,31 +115,6 @@ Quickly find old ideas, notes, and reminders.
   <img src="public/preview/reminder.jpg" width="280" alt="Reminder" />
 </p>
 
----
-
-## Philosophy
-
-Chatme is not trying to replace tools like Notion, Obsidian, or Evernote.
-
-It is built for people who already think through chat.
-
-Sometimes all you need is a place to quickly type:
-
-```text
-Don't forget this.
-```
-
-and move on with your day.
-
----
-
-## Tech Stack
-
-- React
-- TypeScript
-- Tailwind CSS
-- Vite
-- PWA
 
 ---
 
@@ -152,3 +127,5 @@ Chatme is actively being built and improved.
 ---
 
 Built with ☕ and countless messages sent to myself.
+
+[by Flaid](https://flaid.my.id)
