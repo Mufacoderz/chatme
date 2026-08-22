@@ -156,6 +156,7 @@ export default function RoomItem({
           width={46}
           height={46}
           className="object-contain"
+          unoptimized
         />
       </div>
 

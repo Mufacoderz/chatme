@@ -2,19 +2,20 @@ import withSerwistInit from "@serwist/next"
 import type { NextConfig } from "next"
 
 const revision = crypto.randomUUID()
+const isDev = process.env.NODE_ENV === "development"
 
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   additionalPrecacheEntries: [{ url: "/offline", revision }],
   reloadOnOnline: false,
-  disable: process.env.NODE_ENV === "development",
+  disable: isDev,
 })
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
     ],
   },
   experimental: {
@@ -33,8 +34,15 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self'; worker-src 'self'; frame-ancestors 'none';",
+            value: [
+              "default-src 'self'",
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https://*.googleusercontent.com",
+              `connect-src 'self' https://*.googleusercontent.com${isDev ? " ws://localhost:* http://localhost:*" : ""}`,
+              "worker-src 'self'",
+              "frame-ancestors 'none'",
+            ].join("; ") + ";",
           },
         ],
       },
