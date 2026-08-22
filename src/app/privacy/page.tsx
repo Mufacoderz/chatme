@@ -12,7 +12,7 @@ export default function PrivacyPage() {
           Kebijakan Privasi Chatme
         </h1>
         <p className="mt-1 text-xs text-[var(--text3)]">
-          Berlaku sejak: [ISI TANGGAL PUBLISH]
+          Berlaku sejak: 5 Mei 2026
         </p>
 
         <div className="mt-6 space-y-5 text-[var(--text2)]">
@@ -106,8 +106,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 Pertanyaan lain soal data kamu bisa dikirim ke{" "}
-                <a href="mailto:[EMAIL_KONTAK_KAMU]" className="underline">
-                  [EMAIL_KONTAK_KAMU]
+                <a href="mailto:mf9555759@gmail.com" className="underline">
+                  mf9555759@gmail.com
                 </a>.
               </li>
             </ul>
@@ -142,8 +142,8 @@ export default function PrivacyPage() {
             <h2 className="font-sora text-base font-bold text-[var(--text)]">10. Kontak</h2>
             <p className="mt-1 text-sm leading-relaxed">
               Ada pertanyaan soal privasi atau data kamu? Hubungi{" "}
-              <a href="mailto:[EMAIL_KONTAK_KAMU]" className="underline">
-                [EMAIL_KONTAK_KAMU]
+              <a href="mailto:mf9555759@gmail.com" className="underline">
+                mf9555759@gmail.com
               </a>.
             </p>
           </section>
