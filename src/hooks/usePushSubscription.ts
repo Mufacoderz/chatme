@@ -9,6 +9,12 @@ function urlBase64ToUint8Array(base64String: string) {
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)))
 }
 
+function sameKey(a: ArrayBuffer | null, b: Uint8Array) {
+  if (!a) return false
+  const arrA = new Uint8Array(a)
+  return arrA.length === b.length && arrA.every((byte, i) => byte === b[i])
+}
+
 export function usePushSubscription() {
   const subscribe = trpc.push.subscribe.useMutation()
 
@@ -19,12 +25,24 @@ export function usePushSubscription() {
     if (permission !== "granted") return false
 
     const registration = await navigator.serviceWorker.ready
+    const currentKey = urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
+
     const existing = await registration.pushManager.getSubscription()
+    // Subscription lama cuma valid dipake ulang kalau applicationServerKey-nya sama persis
+    // dengan VAPID public key yang aktif sekarang. Kalau beda (VAPID key pernah diganti di
+    // env), subscription lama itu gak akan PERNAH bisa dipake server buat ngirim push lagi
+    // (bakal selalu gagal di web-push dengan error semacam VapidPkHashMismatch) — walaupun
+    // dari sisi UI kelihatan "berhasil subscribe". Harus unsubscribe dulu & subscribe ulang
+    // biar dapet subscription yang match key yang aktif sekarang.
+    if (existing && !sameKey(existing.options.applicationServerKey, currentKey)) {
+      await existing.unsubscribe()
+    }
+
     const subscription =
-      existing ??
+      (await registration.pushManager.getSubscription()) ??
       (await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        applicationServerKey: currentKey,
       }))
 
     await subscribe.mutateAsync({ subscription: subscription.toJSON() as never })
